@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}Preparación{% endblock %}
+{% block contenido %}
+<h1 class="h3 mb-1">Prepárate para una vacante</h1>
+<p class="text-muted">El agente Coach genera preguntas probables de entrevista y un plan de mejora para cada brecha.</p>
+{% if not perfil %}
+  {% include "partials/_estado_vacio.html" with mensaje="Necesitas una hoja de vida analizada para prepararte." url_accion=url_cargar texto_accion="Cargar mi HV" %}
+{% elif not vacantes %}
+  {% include "partials/_estado_vacio.html" with mensaje="No hay vacantes activas en este momento." %}
+{% else %}
+{% if perfiles|length > 1 %}
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-12 col-sm-8 col-md-5">
+    <label class="form-label" for="id_hv">Hoja de vida</label>
+    <select class="form-select" name="hv" id="id_hv">
+      {% for p in perfiles %}<option value="{{ p.hoja_vida_id }}"{% if p.pk == perfil.pk %} selected{% endif %}>{{ p.hoja_vida.nombre_archivo }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-12 col-sm-auto"><button class="btn btn-outline-primary w-100" type="submit">Usar esta HV</button></div>
+</form>
+{% endif %}
+<div class="table-responsive">
+  <table class="table table-hover bg-white align-middle tabla-apilable" id="tabla-preparacion">
+    <thead><tr><th>Vacante</th><th>Ciudad</th><th>Modalidad</th><th class="text-end">Acción</th></tr></thead>
+    <tbody>
+    {% for v in vacantes %}
+      <tr>
+        <td data-etiqueta="Vacante"><strong>{{ v.titulo }}</strong><div class="small text-muted">{{ v.empresa }}</div></td>
+        <td data-etiqueta="Ciudad">{{ v.ciudad }}</td>
+        <td data-etiqueta="Modalidad">{{ v.get_modalidad_display }}</td>
+        <td data-etiqueta="Acción" class="text-end"><a class="btn btn-sm btn-primary" href="{% url 'preparacion:vacante' v.pk %}?hv={{ perfil.hoja_vida_id }}">Preparar</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}
