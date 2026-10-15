@@ -1,0 +1,6 @@
+{% load cuota_tags %}{% resumen_cuota user as cuota %}
+{% if cuota %}
+<a href="{% url 'acceso_magneto:consumo' %}" class="badge rounded-pill text-decoration-none {% if cuota.agotada %}text-bg-danger{% else %}text-bg-light{% endif %}" id="indicador-cuota" title="Consumo de tokens del mes">
+  Cuota {{ cuota.porcentaje }}%{% if cuota.agotada %} · agotada{% endif %}
+</a>
+{% endif %}

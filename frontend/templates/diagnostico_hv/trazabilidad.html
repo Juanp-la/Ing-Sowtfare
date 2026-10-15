@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block titulo %}Trazabilidad por agente{% endblock %}
+{% block contenido %}
+<h1 class="h3 mb-3">Trazabilidad por agente</h1>
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-12 col-sm-6 col-md-4">
+    <label class="form-label" for="filtro-agente">Agente</label>
+    <select class="form-select" name="agente" id="filtro-agente">
+      <option value="">Todos</option>
+      {% for a in agentes %}<option value="{{ a }}"{% if a == agente %} selected{% endif %}>{{ a }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-12 col-sm-auto"><button class="btn btn-outline-primary w-100" type="submit">Filtrar</button></div>
+</form>
+
+{% if pagina.object_list %}
+<div class="row g-2 mb-3" id="resumen-agentes">
+  {% for r in resumen %}
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm h-100"><div class="card-body p-2">
+      <div class="fw-semibold">{{ r.agente }}</div>
+      <div class="small">{{ r.veces }} ejecución(es) · {{ r.tokens }} tokens · {{ r.promedio_ms|floatformat:0 }} ms prom.</div>
+    </div></div>
+  </div>
+  {% endfor %}
+</div>
+<div class="table-responsive">
+  <table class="table table-sm bg-white tabla-apilable" id="tabla-trazas">
+    <thead><tr><th>Fecha</th><th>Agente</th><th>Estado</th><th class="text-end">Tokens</th><th class="text-end">Duración</th><th>Resultado (sin datos personales)</th><th>Ejecución</th>{% if user.is_staff %}<th>Usuario</th>{% endif %}</tr></thead>
+    <tbody>
+    {% for e in pagina.object_list %}
+      <tr>
+        <td data-etiqueta="Fecha">{{ e.fecha|date:"d/m/Y H:i:s" }}</td>
+        <td data-etiqueta="Agente">{{ e.agente }}</td>
+        <td data-etiqueta="Estado"><span class="badge {% if e.estado == 'ok' %}text-bg-success{% else %}text-bg-danger{% endif %}">{{ e.estado }}</span></td>
+        <td data-etiqueta="Tokens" class="text-end">{{ e.tokens }}</td>
+        <td data-etiqueta="Duración" class="text-end">{{ e.duracion_ms }} ms</td>
+        <td data-etiqueta="Resultado" class="small text-break">{{ e.salida_resumen }}</td>
+        <td data-etiqueta="Ejecución" class="small"><code>{{ e.ejecucion_id|slice:":8" }}</code></td>
+        {% if user.is_staff %}<td data-etiqueta="Usuario" class="small">{{ e.usuario_id|default:"—" }}</td>{% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if pagina.has_other_pages %}
+<nav aria-label="Páginas"><ul class="pagination pagination-sm">
+  {% if pagina.has_previous %}<li class="page-item"><a class="page-link" href="?agente={{ agente }}&pagina={{ pagina.previous_page_number }}">Anterior</a></li>{% endif %}
+  <li class="page-item disabled"><span class="page-link">{{ pagina.number }} de {{ pagina.paginator.num_pages }}</span></li>
+  {% if pagina.has_next %}<li class="page-item"><a class="page-link" href="?agente={{ agente }}&pagina={{ pagina.next_page_number }}">Siguiente</a></li>{% endif %}
+</ul></nav>
+{% endif %}
+{% else %}
+{% include "partials/_estado_vacio.html" with mensaje="Aún no hay ejecuciones de agentes registradas." %}
+{% endif %}
+{% endblock %}

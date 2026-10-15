@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block titulo %}{{ vacante.titulo }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta"><a href="{% url 'matching_vacantes:lista' %}">&larr; Vacantes</a></nav>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-2 mt-3 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ vacante.titulo }}</h1>
+    <p class="text-muted mb-0">{{ vacante.empresa }} · {{ vacante.ciudad }} · {{ vacante.get_modalidad_display }} · ${{ vacante.salario_min }} - ${{ vacante.salario_max }}</p>
+  </div>
+  {% if ajuste %}<span class="badge text-bg-primary fs-5" id="ajuste-total">Ajuste {{ ajuste.score|floatformat:0 }}%</span>{% endif %}
+</div>
+{% if vacante.descripcion %}<p>{{ vacante.descripcion }}</p>{% endif %}
+
+{% if not perfil %}
+  {% include "partials/_estado_vacio.html" with mensaje="Carga y analiza tu hoja de vida para ver qué requisitos cumples." url_accion=url_cargar texto_accion="Cargar mi HV" %}
+{% elif not ajuste %}
+  {% include "partials/_error.html" with mensaje="No fue posible calcular el ajuste para esta vacante." %}
+{% else %}
+<p class="fw-semibold" id="resumen-requisitos">Cumples {{ ajuste.cumple|length }} de {{ total }} requisitos.</p>
+<div class="row g-3">
+  <div class="col-12 col-md-6">
+    <div class="card border-success shadow-sm h-100" id="requisitos-cumple">
+      <div class="card-header bg-success-subtle">Requisitos que cumples</div>
+      <ul class="list-group list-group-flush">
+        {% for r in ajuste.cumple %}
+        <li class="list-group-item requisito-cumple">
+          <span aria-hidden="true">✔</span> <strong>{{ r.requisito }}</strong> <span class="badge text-bg-light">{{ r.tipo }}</span>{% if r.obligatorio %} <span class="badge text-bg-dark">Obligatorio</span>{% endif %}
+          <div class="small text-muted">{{ r.evidencia }}</div>
+        </li>
+        {% empty %}<li class="list-group-item text-muted">Ninguno todavía.</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-12 col-md-6">
+    <div class="card border-danger shadow-sm h-100" id="requisitos-no-cumple">
+      <div class="card-header bg-danger-subtle">Requisitos que no cumples</div>
+      <ul class="list-group list-group-flush">
+        {% for r in ajuste.no_cumple %}
+        <li class="list-group-item requisito-no-cumple">
+          <span aria-hidden="true">✘</span> <strong>{{ r.requisito }}</strong> <span class="badge text-bg-light">{{ r.tipo }}</span>{% if r.obligatorio %} <span class="badge text-bg-dark">Obligatorio</span>{% endif %}
+          <div class="small text-muted">{{ r.evidencia }}</div>
+        </li>
+        {% empty %}<li class="list-group-item text-success">¡Cumples todos los requisitos!</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% if url_preparar %}<a class="btn btn-primary mt-3" href="{{ url_preparar }}">Prepararme para esta vacante</a>{% endif %}
+{% endif %}
+{% endblock %}

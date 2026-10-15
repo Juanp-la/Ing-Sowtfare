@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block titulo %}Hoja de vida{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta"><a href="{% url 'analisis_hv:lista' %}">&larr; Mis hojas de vida</a></nav>
+<div class="card shadow-sm mt-3">
+  <div class="card-body">
+    <h1 class="h4">Archivo: <span id="nombre-archivo">{{ hv.nombre_archivo }}</span></h1>
+    <p class="text-muted mb-3">{{ hv.get_formato_display }} · {{ hv.tamano_bytes|filesizeformat }} · {{ hv.get_estado_display }}</p>
+    {% if hv.estado == "error" %}
+      {% include "partials/_error.html" with mensaje=mensaje_ilegible %}
+    {% endif %}
+    <div class="d-flex flex-column flex-sm-row gap-2">
+      <form method="post" action="{% url 'analisis_hv:analizar' hv.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-success w-100" type="submit" id="btn-analizar">Analizar</button>
+      </form>
+      {% if perfil %}<a class="btn btn-outline-primary" href="{% url 'analisis_hv:perfil' hv.pk %}">Ver y corregir perfil</a>{% endif %}
+      <a class="btn btn-outline-danger" href="{% url 'analisis_hv:eliminar' hv.pk %}">Eliminar</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

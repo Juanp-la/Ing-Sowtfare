@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}Diagnóstico{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta"><a href="{% url 'diagnostico_hv:inicio' %}">&larr; Diagnóstico</a></nav>
+<h1 class="h3 mt-3">Diagnóstico de «{{ diagnostico.hoja_vida.nombre_archivo }}»</h1>
+
+{% if diagnostico.estado == "procesando" %}
+<div class="card shadow-sm" id="progreso" data-url-estado="{% url 'diagnostico_hv:estado' diagnostico.pk %}">
+  <div class="card-body">
+    <p class="mb-2">Los agentes están analizando tu hoja de vida. Puedes seguir navegando; esta página se actualiza sola.</p>
+    <div class="progress" role="progressbar" aria-label="Diagnóstico en progreso" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%">Procesando…</div>
+    </div>
+    <p class="small text-muted mt-2 mb-0" id="progreso-nodos">Nodos completados: {{ estado.nodos|join:", "|default:"ninguno aún" }}</p>
+    <p class="small text-warning-emphasis mt-1 mb-0 {% if not estado.lento %}d-none{% endif %}" id="progreso-lento">
+      Está tardando más de {{ umbral }} segundos. Seguimos trabajando, no necesitas esperar en esta página.
+    </p>
+  </div>
+</div>
+
+{% elif diagnostico.estado == "error" %}
+{% include "partials/_error.html" with mensaje=diagnostico.mensaje_error %}
+
+{% else %}
+<div class="row g-3">
+  <div class="col-12 col-md-4">
+    <div class="card shadow-sm h-100 text-center" id="tarjeta-puntaje">
+      <div class="card-body">
+        <p class="text-muted mb-1">Puntaje</p>
+        <p class="display-4 fw-bold mb-1"><span id="puntaje">{{ diagnostico.puntaje }}</span><span class="fs-5">/100</span></p>
+        <span class="badge fs-6 {% if diagnostico.nivel == 'competitivo' %}text-bg-success{% elif diagnostico.nivel == 'por_mejorar' %}text-bg-warning{% else %}text-bg-danger{% endif %}" id="nivel">{{ diagnostico.get_nivel_display }}</span>
+        <p class="small text-muted mt-3 mb-0">Tiempo total: {{ diagnostico.duracion_ms }} ms</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-8">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h2 class="h5">Hallazgos priorizados</h2>
+        {% if pagina.object_list %}
+        <ol class="list-group list-group-numbered" id="lista-hallazgos" start="{{ pagina.start_index }}">
+          {% for h in pagina.object_list %}
+          <li class="list-group-item hallazgo">
+            <span class="badge {% if h.prioridad == 'alta' %}text-bg-danger{% elif h.prioridad == 'media' %}text-bg-warning{% else %}text-bg-secondary{% endif %} prioridad">{{ h.get_prioridad_display }}</span>
+            <strong>{{ h.categoria }}:</strong> {{ h.descripcion }}
+            <div class="small mt-1 accion-sugerida">Acción sugerida: {{ h.accion_sugerida }}</div>
+          </li>
+          {% endfor %}
+        </ol>
+        {% if pagina.has_other_pages %}
+        <nav class="mt-2" aria-label="Más hallazgos">
+          <ul class="pagination pagination-sm mb-0">
+            {% if pagina.has_previous %}<li class="page-item"><a class="page-link" href="?pagina={{ pagina.previous_page_number }}">Anterior</a></li>{% endif %}
+            <li class="page-item disabled"><span class="page-link">{{ pagina.number }} de {{ pagina.paginator.num_pages }}</span></li>
+            {% if pagina.has_next %}<li class="page-item"><a class="page-link" href="?pagina={{ pagina.next_page_number }}">Siguiente</a></li>{% endif %}
+          </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="alert alert-success mb-0" role="status" id="sin-hallazgos">Tu hoja de vida cumple los criterios básicos</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mt-3" id="explicacion">
+  <div class="card-body">
+    <h2 class="h5">¿Por qué este puntaje?</h2>
+    <p>{{ diagnostico.explicacion }}</p>
+    <div class="table-responsive">
+      <table class="table table-sm tabla-apilable mb-0">
+        <thead><tr><th>Criterio</th><th class="text-end">Peso</th><th class="text-end">Obtenido</th><th>Evidencia</th></tr></thead>
+        <tbody>
+        {% for c in diagnostico.criterios %}
+          <tr class="criterio">
+            <td data-etiqueta="Criterio">{{ c.nombre }}</td>
+            <td data-etiqueta="Peso" class="text-end">{{ c.peso }}</td>
+            <td data-etiqueta="Obtenido" class="text-end">{{ c.obtenido }}</td>
+            <td data-etiqueta="Evidencia">{{ c.evidencia }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if tiempos %}
+<details class="mt-3" id="tiempos-nodos">
+  <summary>Tiempo por agente (NF01)</summary>
+  <ul class="small mb-0">{% for t in tiempos %}<li>{{ t.agente }}: {{ t.duracion_ms }} ms · {{ t.tokens }} tokens</li>{% endfor %}</ul>
+</details>
+{% endif %}
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{% static 'diagnostico_hv/progreso.js' %}"></script>{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block titulo %}Preparación: {{ vacante.titulo }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta"><a href="{% url 'preparacion:inicio' %}">&larr; Preparación</a></nav>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-2 mt-3 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ vacante.titulo }}</h1>
+    <p class="text-muted mb-0">{{ vacante.empresa }} · {{ vacante.ciudad }} · {{ vacante.get_modalidad_display }}</p>
+  </div>
+  {% if perfil %}
+  <form method="post" action="{% url 'preparacion:generar' vacante.pk %}">
+    {% csrf_token %}<input type="hidden" name="hv" value="{{ perfil.hoja_vida_id }}">
+    <button class="btn btn-primary" type="submit" id="btn-generar">{% if preguntas %}Regenerar{% else %}Generar{% endif %} preguntas y plan</button>
+  </form>
+  {% endif %}
+</div>
+
+{% if not perfil %}
+  {% include "partials/_estado_vacio.html" with mensaje="Necesitas una hoja de vida analizada para prepararte." url_accion=url_cargar texto_accion="Cargar mi HV" %}
+{% else %}
+<div class="card shadow-sm mb-3" id="brechas">
+  <div class="card-body">
+    <h2 class="h5">Brechas frente a la vacante</h2>
+    {% if brechas %}
+    <ul class="mb-0">{% for b in brechas %}<li>{{ b.requisito }} <span class="small text-muted">({{ b.evidencia }})</span>{% if b.obligatorio %} <span class="badge text-bg-dark">Obligatorio</span>{% endif %}</li>{% endfor %}</ul>
+    {% else %}
+    <p class="mb-0 text-success">No se detectaron brechas: cumples todos los requisitos de esta vacante.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% if not preguntas %}
+  {% include "partials/_estado_vacio.html" with mensaje="Aún no has generado tu preparación para esta vacante. Pulsa «Generar preguntas y plan»." %}
+{% else %}
+<div class="row g-3">
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm h-100" id="preguntas">
+      <div class="card-body">
+        <h2 class="h5">Preguntas probables de entrevista</h2>
+        <ol class="mb-0">
+          {% for p in preguntas %}
+          <li class="mb-2 pregunta">
+            <span class="badge text-bg-light">{{ p.get_tipo_display }}</span> {{ p.pregunta }}
+            <div class="small text-muted sugerencia">Cómo responder: {{ p.sugerencia }}</div>
+          </li>
+          {% endfor %}
+        </ol>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm h-100" id="plan">
+      <div class="card-body">
+        <h2 class="h5">Plan de mejora</h2>
+        {% if plan.acciones %}
+        <ul class="list-group list-group-flush">
+          {% for a in plan.acciones %}
+          <li class="list-group-item px-0 accion-plan">
+            <span class="badge {% if a.prioridad == 'alta' %}text-bg-danger{% else %}text-bg-warning{% endif %}">{{ a.prioridad|capfirst }}</span>
+            <strong>{{ a.brecha }}:</strong> {{ a.accion }}
+            <div class="small text-muted">Recurso: {{ a.recurso }} · Plazo: {{ a.plazo }}</div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="mb-0 text-success" id="plan-sin-brechas">No hay brechas que cerrar para esta vacante. Enfócate en preparar la entrevista.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}
