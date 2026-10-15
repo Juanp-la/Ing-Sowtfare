@@ -96,9 +96,10 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # SQLite por defecto; PostgreSQL 16 con DATABASE_URL (docker-compose).
+# Un DATABASE_URL vacío (como en .env.example) cuenta como no definido.
 DATABASES = {
-    "default": dj_database_url.config(
-        default=f"sqlite:///{(BASE_DIR / 'db.sqlite3').as_posix()}", conn_max_age=60
+    "default": dj_database_url.parse(
+        os.environ.get("DATABASE_URL") or f"sqlite:///{(BASE_DIR / 'db.sqlite3').as_posix()}", conn_max_age=60
     )
 }
 
