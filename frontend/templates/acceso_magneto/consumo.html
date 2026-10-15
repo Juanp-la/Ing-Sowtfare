@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block titulo %}Mi consumo{% endblock %}
+{% block contenido %}
+<h1 class="h3 mb-3">Consumo de mi cuota</h1>
+{% if cuota.agotada %}
+<div class="alert alert-warning" role="alert" id="cuota-bloqueada">
+  Cuota agotada: los agentes del copiloto están bloqueados hasta el próximo mes.
+</div>
+{% endif %}
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="d-flex flex-column flex-sm-row justify-content-between gap-1 mb-2">
+      <span>Usados este mes: <strong id="tokens-usados">{{ cuota.consumo }}</strong> de {{ cuota.cuota }} tokens</span>
+      <span>Disponibles: <strong>{{ cuota.disponible }}</strong></span>
+    </div>
+    <div class="progress" role="progressbar" aria-label="Consumo de la cuota" aria-valuenow="{{ cuota.porcentaje }}" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar {% if cuota.porcentaje >= 90 %}bg-danger{% elif cuota.porcentaje >= 70 %}bg-warning{% endif %}" style="width: {{ cuota.porcentaje }}%">{{ cuota.porcentaje }}%</div>
+    </div>
+  </div>
+</div>
+<h2 class="h5">Por agente (mes en curso)</h2>
+{% if por_agente %}
+<div class="table-responsive">
+  <table class="table table-sm bg-white tabla-apilable">
+    <thead><tr><th>Agente</th><th class="text-end">Ejecuciones</th><th class="text-end">Tokens</th></tr></thead>
+    <tbody>
+    {% for fila in por_agente %}
+      <tr><td data-etiqueta="Agente">{{ fila.agente }}</td><td data-etiqueta="Ejecuciones" class="text-end">{{ fila.ejecuciones }}</td><td data-etiqueta="Tokens" class="text-end">{{ fila.tokens }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+{% include "partials/_estado_vacio.html" with mensaje="Aún no has usado los agentes este mes." %}
+{% endif %}
+{% endblock %}
