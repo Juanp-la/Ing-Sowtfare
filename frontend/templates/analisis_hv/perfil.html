@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block titulo %}Perfil extraído{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta"><a href="{% url 'analisis_hv:lista' %}">&larr; Mis hojas de vida</a></nav>
+<h1 class="h3 mt-3 mb-1">Datos extraídos de tu hoja de vida</h1>
+{% if not form %}
+  {% url 'analisis_hv:detalle' hv.pk as url_detalle %}
+  {% include "partials/_estado_vacio.html" with mensaje="Esta hoja de vida aún no se ha analizado." url_accion=url_detalle texto_accion="Ir a analizar" %}
+{% else %}
+<p class="text-muted">Los campos resaltados están vacíos: complétalos si aplica. Nada se guarda hasta que confirmes.</p>
+{% if sin_guardar %}<div class="alert alert-info" role="status" id="cambios-sin-guardar">Tienes cambios sin guardar. Pulsa «Confirmar y guardar» para aplicarlos.</div>{% endif %}
+{% if perfil.confirmado %}<span class="badge text-bg-success mb-3">Perfil confirmado</span>{% endif %}
+<form method="post" id="form-perfil" novalidate>
+  {% csrf_token %}
+  {% for grupo in form.grupos %}
+  <fieldset class="card shadow-sm mb-3">
+    <div class="card-body">
+      <legend class="h5">{{ grupo.titulo }}</legend>
+      <div class="row g-3">
+      {% for item in grupo.campos %}
+        <div class="col-12{% if item.campo.name in 'nombre email telefono ciudad' %} col-md-6{% endif %}">
+          <label class="form-label" for="{{ item.campo.id_for_label }}">{{ item.campo.label }}</label>
+          {% if item.campo.field.widget.input_type %}
+            <input class="form-control{% if item.vacio %} campo-vacio{% endif %}" type="{% if item.campo.name == 'email' %}email{% else %}text{% endif %}"
+                   name="{{ item.campo.html_name }}" id="{{ item.campo.id_for_label }}" value="{{ item.campo.value|default:'' }}">
+          {% else %}
+            <textarea class="form-control{% if item.vacio %} campo-vacio{% endif %}" name="{{ item.campo.html_name }}" id="{{ item.campo.id_for_label }}"
+                      rows="{{ item.campo.field.widget.attrs.rows|default:3 }}">{{ item.campo.value|default:'' }}</textarea>
+          {% endif %}
+          {% if item.vacio %}<div class="form-text text-warning-emphasis">Campo vacío</div>{% endif %}
+          {% for error in item.campo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        </div>
+      {% endfor %}
+      </div>
+    </div>
+  </fieldset>
+  {% endfor %}
+  <div class="d-flex flex-column flex-sm-row gap-2">
+    <button class="btn btn-primary" type="submit" name="accion" value="confirmar" id="btn-confirmar">Confirmar y guardar</button>
+    <button class="btn btn-outline-secondary" type="submit" name="accion" value="revisar">Revisar sin guardar</button>
+    <a class="btn btn-link" href="{% url 'analisis_hv:lista' %}">Cancelar</a>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

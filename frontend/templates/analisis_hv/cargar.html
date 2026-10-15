@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}Cargar hoja de vida{% endblock %}
+{% block contenido %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-6">
+    <h1 class="h3 mb-3">Cargar hoja de vida</h1>
+    {% if form.archivo.errors %}{% include "partials/_error.html" with mensaje=form.archivo.errors.0 %}{% endif %}
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" id="form-carga">
+          {% csrf_token %}
+          <label class="form-label" for="id_archivo">{{ form.archivo.label }}</label>
+          <input class="form-control" type="file" name="archivo" id="id_archivo" accept=".pdf,.docx" required>
+          <div class="form-text">Solo PDF con texto seleccionable o Word (.docx). Las HV escaneadas no se pueden leer.</div>
+          <p class="mt-2 mb-0 small" id="nombre-seleccionado" aria-live="polite"></p>
+          <div class="d-flex flex-column flex-sm-row gap-2 mt-3">
+            <button class="btn btn-primary" type="submit" id="btn-cargar">Cargar archivo</button>
+            <button class="btn btn-outline-success" type="button" id="btn-analizar" disabled title="Primero carga el archivo">Analizar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'analisis_hv/carga.js' %}"></script>{% endblock %}

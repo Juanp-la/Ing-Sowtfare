@@ -1,0 +1,41 @@
+# Ejecución local con PostgreSQL 16 (opcional; por defecto el proyecto usa SQLite).
+# Requiere un archivo .env en la raíz con POSTGRES_PASSWORD (ver .env.example).
+services:
+  web:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      DATABASE_URL: postgres://${POSTGRES_USER:-copiloto}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD en .env}@db:5432/${POSTGRES_DB:-copiloto}
+      CAMPOS_CIFRADO_KEY: ${CAMPOS_CIFRADO_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      LLM_MODEL: ${LLM_MODEL:-}
+      COPILOTO_TAREAS_ASINCRONAS: ${COPILOTO_TAREAS_ASINCRONAS:-1}
+      DEV_AUTO_LOGIN: ${DEV_AUTO_LOGIN:-0}
+    volumes:
+      - media_hv:/app/backend/media
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-copiloto}
+      POSTGRES_USER: ${POSTGRES_USER:-copiloto}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD en .env}
+    volumes:
+      - datos_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  datos_pg:
+  media_hv:
