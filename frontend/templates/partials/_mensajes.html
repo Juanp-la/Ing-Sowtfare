@@ -1,0 +1,10 @@
+{% if messages %}
+<div class="mb-3" aria-live="polite">
+  {% for mensaje in messages %}
+  <div class="alert alert-{% if mensaje.tags == 'error' %}danger{% else %}{{ mensaje.tags|default:'info' }}{% endif %} alert-dismissible fade show" role="alert">
+    {{ mensaje }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block titulo %}Ingresar{% endblock %}
+{% block contenido %}
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-10 col-md-6 col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-3">Ingresar</h1>
+        {% if form.non_field_errors %}{% include "partials/_error.html" with mensaje=form.non_field_errors.0 %}{% endif %}
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label" for="id_username">Correo electrónico</label>
+            <input class="form-control" type="email" name="username" id="id_username" value="{{ form.username.value|default:'' }}" autocomplete="email" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="id_password">Contraseña</label>
+            <input class="form-control" type="password" name="password" id="id_password" autocomplete="current-password" required>
+          </div>
+          <input type="hidden" name="next" value="{{ next }}">
+          <button class="btn btn-primary w-100" type="submit">Ingresar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
