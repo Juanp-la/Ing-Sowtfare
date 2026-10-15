@@ -4,6 +4,7 @@ Solo se activa con LLM_PROVIDER y LLM_MODEL por variable de entorno; la llave la
 paquete del proveedor desde su propia variable de entorno. Nunca hay llaves en el código.
 """
 import json
+import os
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -17,7 +18,12 @@ def _fabrica_por_defecto(proveedor, modelo):
         raise ImproperlyConfigured(
             "Para un LLM real instale 'langchain' y el paquete del proveedor; o use LLM_PROVIDER=mock."
         ) from exc
-    return init_chat_model(modelo, model_provider=proveedor, temperature=0)
+    opciones = {}
+    # Algunos modelos nuevos rechazan `temperature`; solo se envía si LLM_TEMPERATURE está definida.
+    temperatura = os.environ.get("LLM_TEMPERATURE", "").strip()
+    if temperatura:
+        opciones["temperature"] = float(temperatura)
+    return init_chat_model(modelo, model_provider=proveedor, **opciones)
 
 
 class LangChainLLMClient(LLMClient):
