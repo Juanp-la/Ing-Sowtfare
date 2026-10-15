@@ -1,0 +1,18 @@
+# Probado con Python 3.12. Versiones verificadas entre paréntesis.
+Django>=5.1,<5.2            # (5.1.15)
+langgraph>=1.2,<2           # (1.2.15) motor de agentes; trae langchain-core
+pydantic>=2.7,<3            # (2.14.1) salida estructurada
+cryptography>=42            # (50.0.2) Fernet para NF02
+PyMuPDF>=1.24               # (1.28.2) lectura de PDF
+python-docx>=1.1            # (1.2.0) lectura de Word
+dj-database-url>=2.2        # (3.1.2) DATABASE_URL opcional
+psycopg[binary]>=3.2        # (3.3.6) PostgreSQL 16 en docker-compose
+gunicorn>=22                # (26.2.0) servidor en el contenedor (Linux)
+
+# Pruebas
+pytest>=8                   # (9.1.1)
+pytest-django>=4.8          # (4.14.0)
+pytest-cov>=5               # (7.1.0)
+
+# Opcional, solo para un LLM real (LLM_PROVIDER distinto de mock): instale aparte
+#   langchain y el paquete del proveedor (p. ej. langchain-openai). No se usan en pruebas.
