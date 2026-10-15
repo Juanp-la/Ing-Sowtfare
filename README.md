@@ -362,7 +362,3 @@ Demo manual (Sección 6 del informe):
 | Programa | Ingenieria de Sistemas |
 | Semestre | 2026-2 |
 
-Prácticas del curso aplicadas según los informes: prueba de concepto con datos medidos (PoC de la Entrega 1:
-PyMuPDF frente a pdfplumber), arquitectura por capas con Django (modelos, vistas y Django Templates), modelado
-(diagramas de clases, componentes, despliegue y entidad-relación), trabajo en equipo con Scrum (ceremonias,
-backlog y sprints) y control de versiones en GitHub con Pull Requests.
