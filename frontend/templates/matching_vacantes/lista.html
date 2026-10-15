@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block titulo %}Vacantes por ajuste{% endblock %}
+{% block contenido %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Vacantes ordenadas por ajuste</h1>
+  {% if perfil %}
+  <form method="post" action="{% url 'matching_vacantes:recalcular' %}">
+    {% csrf_token %}<input type="hidden" name="hv" value="{{ perfil.hoja_vida_id }}">
+    <button class="btn btn-sm btn-outline-secondary" type="submit">Recalcular ajuste</button>
+  </form>
+  {% endif %}
+</div>
+
+{% if not perfil %}
+  {% include "partials/_estado_vacio.html" with mensaje="Necesitas una hoja de vida analizada para calcular tu ajuste con las vacantes." url_accion=url_cargar texto_accion="Cargar mi HV" %}
+{% elif error %}
+  {% include "partials/_error.html" with mensaje=error %}
+{% else %}
+<form method="get" class="card card-body shadow-sm mb-3" id="filtros" novalidate>
+  <div class="row g-2 align-items-end">
+    {% if perfiles|length > 1 %}
+    <div class="col-12 col-md-3">
+      <label class="form-label" for="id_hv">Hoja de vida</label>
+      <select class="form-select" name="hv" id="id_hv">
+        {% for p in perfiles %}<option value="{{ p.hoja_vida_id }}"{% if p.pk == perfil.pk %} selected{% endif %}>{{ p.hoja_vida.nombre_archivo }}</option>{% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    <div class="col-12 col-sm-6 col-md-3">
+      <label class="form-label" for="id_ciudad">Ciudad</label>
+      <select class="form-select" name="ciudad" id="id_ciudad">
+        {% for valor, texto in form.fields.ciudad.choices %}<option value="{{ valor }}"{% if form.ciudad.value == valor %} selected{% endif %}>{{ texto }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-sm-6 col-md-2">
+      <label class="form-label" for="id_modalidad">Modalidad</label>
+      <select class="form-select" name="modalidad" id="id_modalidad">
+        {% for valor, texto in form.fields.modalidad.choices %}<option value="{{ valor }}"{% if form.modalidad.value == valor %} selected{% endif %}>{{ texto }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="form-label" for="id_salario_min">Salario desde</label>
+      <input class="form-control" type="number" min="0" step="100000" name="salario_min" id="id_salario_min" value="{{ form.salario_min.value|default:'' }}">
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="form-label" for="id_salario_max">Salario hasta</label>
+      <input class="form-control" type="number" min="0" step="100000" name="salario_max" id="id_salario_max" value="{{ form.salario_max.value|default:'' }}">
+    </div>
+    <div class="col-12 col-md-auto d-grid"><button class="btn btn-primary" type="submit">Filtrar</button></div>
+  </div>
+  {% if form.non_field_errors %}<div class="text-danger small mt-2" id="error-filtros">{{ form.non_field_errors.0 }}</div>{% endif %}
+</form>
+
+{% if filas %}
+<p class="text-muted small">{{ filas|length }} de {{ total_vacantes }} vacantes · perfil de «{{ perfil.hoja_vida.nombre_archivo }}»</p>
+<div class="table-responsive">
+  <table class="table table-hover bg-white align-middle tabla-apilable" id="tabla-vacantes">
+    <thead><tr><th>Ajuste</th><th>Vacante</th><th>Ciudad</th><th>Modalidad</th><th>Salario</th><th class="text-end">Acción</th></tr></thead>
+    <tbody>
+    {% for fila in filas %}
+      <tr class="fila-vacante" data-vacante="{{ fila.vacante.magneto_id }}">
+        <td data-etiqueta="Ajuste"><span class="badge {% if fila.score >= 70 %}text-bg-success{% elif fila.score >= 45 %}text-bg-warning{% else %}text-bg-secondary{% endif %} fs-6 ajuste">{{ fila.score|floatformat:0 }}%</span></td>
+        <td data-etiqueta="Vacante"><strong>{{ fila.vacante.titulo }}</strong><div class="small text-muted">{{ fila.vacante.empresa }}</div></td>
+        <td data-etiqueta="Ciudad">{{ fila.vacante.ciudad }}</td>
+        <td data-etiqueta="Modalidad">{{ fila.vacante.get_modalidad_display }}</td>
+        <td data-etiqueta="Salario">${{ fila.vacante.salario_min }} - ${{ fila.vacante.salario_max }}</td>
+        <td data-etiqueta="Acción" class="text-end">
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'matching_vacantes:detalle' fila.vacante.pk %}?hv={{ perfil.hoja_vida_id }}">Ver ajuste</a>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  {% include "partials/_estado_vacio.html" with mensaje="No hay vacantes con esos filtros." %}
+{% endif %}
+{% endif %}
+{% endblock %}
