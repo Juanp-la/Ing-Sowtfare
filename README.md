@@ -357,10 +357,10 @@ Demo manual (Sección 6 del informe):
 |---|---|
 | Curso | Ingeniería de Software |
 | Universidad | Universidad EAFIT |
-| Profesora | Elizabeth (apellido: Pendiente) |
-| Programa | Pendiente |
-| Código del curso | Pendiente |
-| Semestre | 2026-2 (Entrega 1 del 20 de agosto de 2026 y Entrega 2 de octubre de 2026; reto "Retos 2026-2") |
+| Profesora | Elizabeth Suescun Monsalve |
+| Código del curso | C2666 |
+| Programa | Ingenieria de Sistemas |
+| Semestre | 2026-2 |
 
 Prácticas del curso aplicadas según los informes: prueba de concepto con datos medidos (PoC de la Entrega 1:
 PyMuPDF frente a pdfplumber), arquitectura por capas con Django (modelos, vistas y Django Templates), modelado
