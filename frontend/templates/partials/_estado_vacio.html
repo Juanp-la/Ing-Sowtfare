@@ -1,0 +1,5 @@
+{# Uso: {% include "partials/_estado_vacio.html" with mensaje="..." url_accion=... texto_accion="..." %} #}
+<div class="estado-vacio text-center border rounded-3 bg-white p-4 p-md-5" role="status">
+  <p class="lead mb-3">{{ mensaje }}</p>
+  {% if url_accion %}<a class="btn btn-primary" href="{{ url_accion }}">{{ texto_accion }}</a>{% endif %}
+</div>

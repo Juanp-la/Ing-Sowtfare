@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titulo %}Inicio{% endblock %}
+{% block contenido %}
+<h1 class="h3 mb-1">Hola, {{ user.nombre_visible }}</h1>
+<p class="text-muted mb-4">Tu copiloto para preparar la hoja de vida y encontrar vacantes.</p>
+{% if menu_copiloto %}
+<div class="row g-3">
+  {% for item in menu_copiloto %}
+  <div class="col-12 col-sm-6 col-lg-4">
+    <a class="card h-100 text-decoration-none shadow-sm tarjeta-menu" href="{{ item.url }}">
+      <div class="card-body"><h2 class="h5 card-title mb-0">{{ item.titulo }}</h2></div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+{% include "partials/_estado_vacio.html" with mensaje="Aún no hay funcionalidades instaladas en esta rama." %}
+{% endif %}
+{% endblock %}
