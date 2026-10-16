@@ -183,8 +183,7 @@ El `.env` solo es obligatorio para Docker Compose (sección 4.5). Para crearlo, 
 raíz; el archivo está en `.gitignore` y no se sube al repositorio. Variables (solo por nombre): `DJANGO_DEBUG`,
 `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DATABASE_URL`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`,
 `CAMPOS_CIFRADO_KEY`, `LLM_PROVIDER` (por defecto `mock`), `LLM_MODEL`, `LLM_CACHE`, `CUOTA_TOKENS_DEFECTO`,
-`COPILOTO_TAREAS_ASINCRONAS`, `MAGNETO_CLIENT` (`mock`), `DEV_AUTO_LOGIN`, `ANTHROPIC_API_KEY` y `LLM_TEMPERATURE`
-(estas dos últimas solo para la prueba con un LLM real, sección 4.10). Los comandos para generar
+`COPILOTO_TAREAS_ASINCRONAS`, `MAGNETO_CLIENT` (`mock`), `DEV_AUTO_LOGIN`. Los comandos para generar
 `DJANGO_SECRET_KEY` y `CAMPOS_CIFRADO_KEY` están comentados en el mismo `.env.example`.
 
 No se necesita ninguna llave externa (ni de un LLM ni de Magneto): ambos están simulados con `mock`.
@@ -215,8 +214,6 @@ $pw = -join ((48..57)+(65..90)+(97..122) | Get-Random -Count 24 | ForEach-Object
 $b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b)
 $k = [Convert]::ToBase64String($b).Replace('+','-').Replace('/','_')
 (Get-Content .env) -replace '^CAMPOS_CIFRADO_KEY=.*', "CAMPOS_CIFRADO_KEY=$k" | Set-Content .env
-$s = -join ((48..57)+(65..90)+(97..122) | Get-Random -Count 50 | ForEach-Object {[char]$_})
-(Get-Content .env) -replace '^DJANGO_SECRET_KEY=.*', "DJANGO_SECRET_KEY=$s" | Set-Content .env
 ```
 
    Git Bash, macOS o Linux:
@@ -225,14 +222,10 @@ $s = -join ((48..57)+(65..90)+(97..122) | Get-Random -Count 50 | ForEach-Object 
 cp .env.example .env
 sed -i "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$(python -c 'import secrets; print(secrets.token_hex(12))')/" .env
 sed -i "s/^CAMPOS_CIFRADO_KEY=.*/CAMPOS_CIFRADO_KEY=$(python -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(32)).decode())')/" .env
-sed -i "s/^DJANGO_SECRET_KEY=.*/DJANGO_SECRET_KEY=$(python -c 'import secrets; print(secrets.token_urlsafe(50))')/" .env
 ```
 
    `CAMPOS_CIFRADO_KEY` es obligatoria en Docker: sin ella cada proceso del servidor usa una clave temporal distinta
-   y no puede leer los datos cifrados que creó otro (por ejemplo, la HV demo cargada con `seed_demo`). Lo mismo pasa con
-   `DJANGO_SECRET_KEY`: sin ella cada proceso firma las sesiones con una clave distinta y la aplicación pide iniciar
-   sesión de nuevo en cada acción. Genere las tres variables antes del primer `docker compose up` y no las cambie
-   después (si cambia `POSTGRES_PASSWORD` con la base ya creada, ejecute `docker compose down -v`).
+   y no puede leer los datos cifrados que creó otro (por ejemplo, la HV demo cargada con `seed_demo`).
 
 2. Levante los servicios (la primera vez construye la imagen y aplica las migraciones):
 
@@ -250,7 +243,6 @@ docker compose exec web python manage.py seed_demo
 4. Abra http://localhost:8000 e ingrese con esas credenciales. Para detener: `docker compose down`
    (agregue `-v` para borrar también los datos de la base).
 
-Este modo no se ejecutó en la sesión de construcción: Pendiente de probar.
 
 ### 4.6 URLs de la aplicación
 
@@ -275,11 +267,6 @@ Este modo no se ejecutó en la sesión de construcción: Pendiente de probar.
 | `DJANGO_SECRET_KEY es obligatoria` | Ocurre con `DJANGO_DEBUG=0`: defínala en `.env` |
 | `required variable POSTGRES_PASSWORD is missing a value` | Falta el `.env` o `POSTGRES_PASSWORD` está vacía: siga los pasos de la sección 4.5 |
 | En Docker, la HV demo o el perfil no se pueden leer (error al descifrar) | `CAMPOS_CIFRADO_KEY` estaba vacía al cargar los datos: defínala en `.env`, ejecute `docker compose down -v`, `docker compose up --build` y repita `seed_demo` |
-| La app pide iniciar sesión en cada acción (Docker) | `DJANGO_SECRET_KEY` vacía: defínala en `.env` y reinicie con `docker compose up -d` |
-| `password authentication failed for user "copiloto"` | Se cambió `POSTGRES_PASSWORD` con la base ya creada: ejecute `docker compose down -v` y `docker compose up --build` |
-| `temperature is deprecated for this model` | Quite `LLM_TEMPERATURE` del `.env`: por defecto no se envía ese parámetro |
-| `No fue posible leer el archivo` con un LLM real | Ese mensaje aparece si falla cualquier agente. Revise en la terminal del servidor la línea `Falló el agente ...` y la pantalla Trazabilidad |
-| `manage.py` no se encuentra | Ejecute los comandos de Django dentro de `backend` y con el venv activo (el prompt muestra `(.venv-copiloto)`) |
 | La clave demo no funciona | `seed_demo` genera una clave nueva en cada ejecución: use la última impresa |
 
 ### 4.8 Decisiones y trade-offs
@@ -304,44 +291,6 @@ Este modo no se ejecutó en la sesión de construcción: Pendiente de probar.
 - Cada usuario solo ve sus HV y diagnósticos (404 en caso contrario).
 - Logs con correos y teléfonos enmascarados; la traza de agentes guarda hash y resumen sin datos personales.
 - Cuota mensual de tokens verificada antes de invocar el grafo (NF04).
-
-### 4.10 Prueba con un LLM real (Claude)
-Por defecto el proyecto usa un LLM simulado (`LLM_PROVIDER=mock`), sin llaves ni costo. Para probar con un modelo real:
-
-1. Cree la llave en Claude Console (https://platform.claude.com):
-   1. Inicie sesión y agregue crédito en Billing. La API se paga aparte de la suscripción a claude.ai.
-   2. En Settings, Limits, fije un límite mensual de gasto bajo.
-   3. En Settings, API Keys, pulse Create Key, póngale un nombre (por ejemplo `magneto-copiloto-prueba`) y cópiela: solo se muestra una vez.
-2. Instale los paquetes opcionales en el venv (sección 4.2):
-
-```powershell
-pip install langchain langchain-anthropic
-```
-
-3. Abra el `.env` de la raíz (`notepad .env`; así la llave no queda en el historial del terminal) y defina:
-
-```
-LLM_PROVIDER=anthropic
-LLM_MODEL=claude-haiku-5-5
-LLM_CACHE=0
-CUOTA_TOKENS_DEFECTO=100000
-ANTHROPIC_API_KEY=su_llave_aqui
-```
-
-   `LLM_CACHE=0` evita que la caché falsee los tiempos. `CUOTA_TOKENS_DEFECTO` sube la cuota mensual por usuario, que se fija al ejecutar `seed_demo`. No defina `LLM_TEMPERATURE` salvo que su modelo la acepte.
-4. Desde `backend` y con el venv activo, cree datos limpios y compruebe la llave antes de usar la aplicación:
-
-```powershell
-python manage.py migrate
-python manage.py seed_demo
-python manage.py shell -c "from core.llm.fabrica import crear_llm; from core.llm.esquemas import PerfilHV; r=crear_llm().generar('Ana Demo, Medellin, sabe SQL y Excel.', PerfilHV); print(r.modelo, r.tokens, r.datos.contacto.nombre, r.datos.habilidades)"
-```
-
-   Debe imprimir el modelo, un número real de tokens y los datos de Ana Demo. La consola de Windows puede mostrar mal los acentos; no afecta los datos.
-5. Levante el servidor (`python manage.py runserver 8001`, ya que Docker puede ocupar el 8000) y recorra la aplicación con la HV sintética de demostración: subir y analizar, confirmar el perfil, diagnosticar (cronometrar para NF01), vacantes, coach y Trazabilidad. Use siempre datos sintéticos: el texto de la HV se envía al proveedor.
-6. Al terminar, revoque la llave en Claude Console. El `.env` está en `.gitignore`; nunca suba la llave al repositorio.
-
-El modo Docker no instala `langchain` ni pasa `ANTHROPIC_API_KEY`: esta prueba se hace con el venv local.
 
 ## 5. Pruebas
 

@@ -6,6 +6,7 @@ venv/
 
 # Secretos y configuración local
 .env
+.env.example
 
 # Datos locales
 backend/db.sqlite3
