@@ -172,17 +172,21 @@ pip install -r backend/requirements.txt
 PowerShell:
 
 ```powershell
-py -3.12 -m venv ..\.venv-copiloto
+py -3 -m venv ..\.venv-copiloto   # probado con Python 3.12 y 3.13
 ..\.venv-copiloto\Scripts\Activate.ps1
 pip install -r backend\requirements.txt
 ```
 
 ### 4.3 Variables de entorno
-Copie `.env.example` a `.env` en la raíz y complete los valores. Variables (solo por nombre): `DJANGO_DEBUG`,
+Para la ejecución local con SQLite (secciones 4.2 y 4.4) **no hace falta `.env`**: todo tiene valores por defecto.
+El `.env` solo es obligatorio para Docker Compose (sección 4.5). Para crearlo, copie `.env.example` a `.env` en la
+raíz; el archivo está en `.gitignore` y no se sube al repositorio. Variables (solo por nombre): `DJANGO_DEBUG`,
 `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DATABASE_URL`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`,
 `CAMPOS_CIFRADO_KEY`, `LLM_PROVIDER` (por defecto `mock`), `LLM_MODEL`, `LLM_CACHE`, `CUOTA_TOKENS_DEFECTO`,
 `COPILOTO_TAREAS_ASINCRONAS`, `MAGNETO_CLIENT` (`mock`), `DEV_AUTO_LOGIN`. Los comandos para generar
 `DJANGO_SECRET_KEY` y `CAMPOS_CIFRADO_KEY` están comentados en el mismo `.env.example`.
+
+No se necesita ninguna llave externa (ni de un LLM ni de Magneto): ambos están simulados con `mock`.
 
 ### 4.4 Base de datos, datos de demostración y servidor
 
@@ -197,13 +201,48 @@ python manage.py runserver
 clave nueva en cada ejecución (no se guarda en ningún archivo). Use esas credenciales: ver salida de `seed_demo`.
 
 ### 4.5 Modo Docker Compose
+No hay que crear ninguna base de datos: el compose levanta PostgreSQL 16 y crea la base `copiloto`. La única
+variable obligatoria es `POSTGRES_PASSWORD`, una clave interna de esa base local que usted inventa (no es una llave
+de ningún servicio externo). El resto de variables puede quedar como viene en `.env.example`.
+
+1. Cree el `.env` con una clave aleatoria. PowerShell, desde la raíz del repo:
+
+```powershell
+Copy-Item .env.example .env
+$pw = -join ((48..57)+(65..90)+(97..122) | Get-Random -Count 24 | ForEach-Object {[char]$_})
+(Get-Content .env) -replace '^POSTGRES_PASSWORD=.*', "POSTGRES_PASSWORD=$pw" | Set-Content .env
+$b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b)
+$k = [Convert]::ToBase64String($b).Replace('+','-').Replace('/','_')
+(Get-Content .env) -replace '^CAMPOS_CIFRADO_KEY=.*', "CAMPOS_CIFRADO_KEY=$k" | Set-Content .env
+```
+
+   Git Bash, macOS o Linux:
+
+```bash
+cp .env.example .env
+sed -i "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$(python -c 'import secrets; print(secrets.token_hex(12))')/" .env
+sed -i "s/^CAMPOS_CIFRADO_KEY=.*/CAMPOS_CIFRADO_KEY=$(python -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(32)).decode())')/" .env
+```
+
+   `CAMPOS_CIFRADO_KEY` es obligatoria en Docker: sin ella cada proceso del servidor usa una clave temporal distinta
+   y no puede leer los datos cifrados que creó otro (por ejemplo, la HV demo cargada con `seed_demo`).
+
+2. Levante los servicios (la primera vez construye la imagen y aplica las migraciones):
 
 ```bash
 docker compose up --build
 ```
 
-Requiere `POSTGRES_PASSWORD` en `.env`. Levanta `web` (Gunicorn + Django) y `db` (PostgreSQL 16). No se ejecutó en
-la sesión de construcción: Pendiente de probar.
+3. En otra terminal, en la misma carpeta, cree el usuario y los datos de demostración. Imprime el correo y la
+   clave del usuario demo:
+
+```bash
+docker compose exec web python manage.py seed_demo
+```
+
+4. Abra http://localhost:8000 e ingrese con esas credenciales. Para detener: `docker compose down`
+   (agregue `-v` para borrar también los datos de la base).
+
 
 ### 4.6 URLs de la aplicación
 
@@ -226,6 +265,8 @@ la sesión de construcción: Pendiente de probar.
 | `warning: LF will be replaced by CRLF` | Aviso de fin de línea en Windows; opcional `git config core.autocrlf true` |
 | Aviso `core.W001` o error `core.E001` | Falta `CAMPOS_CIFRADO_KEY` en `.env` (con `DJANGO_DEBUG=0` es obligatoria) |
 | `DJANGO_SECRET_KEY es obligatoria` | Ocurre con `DJANGO_DEBUG=0`: defínala en `.env` |
+| `required variable POSTGRES_PASSWORD is missing a value` | Falta el `.env` o `POSTGRES_PASSWORD` está vacía: siga los pasos de la sección 4.5 |
+| En Docker, la HV demo o el perfil no se pueden leer (error al descifrar) | `CAMPOS_CIFRADO_KEY` estaba vacía al cargar los datos: defínala en `.env`, ejecute `docker compose down -v`, `docker compose up --build` y repita `seed_demo` |
 | La clave demo no funciona | `seed_demo` genera una clave nueva en cada ejecución: use la última impresa |
 
 ### 4.8 Decisiones y trade-offs
