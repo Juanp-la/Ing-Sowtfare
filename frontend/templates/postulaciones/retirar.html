@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block titulo %}Retirar postulación{% endblock %}
+{% block contenido %}
+<h1 class="h3">Retirar postulación</h1>
+<p>¿Retirar tu postulación a <strong>{{ p.vacante.titulo }}</strong> en {{ p.vacante.empresa }}? El reclutador dejará de verla.</p>
+<form method="post" class="d-flex gap-2">
+  {% csrf_token %}
+  <button class="btn btn-danger" type="submit">Sí, retirar</button>
+  <a class="btn btn-outline-secondary" href="{% url 'postulaciones:detalle' p.pk %}">Cancelar</a>
+</form>
+{% endblock %}

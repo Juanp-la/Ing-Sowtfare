@@ -45,6 +45,10 @@
     </div>
   </div>
 </div>
-{% if url_preparar %}<a class="btn btn-primary mt-3" href="{{ url_preparar }}">Prepararme para esta vacante</a>{% endif %}
+<div class="d-flex flex-wrap gap-2 mt-3">
+  {% if url_postular %}<a class="btn btn-success" href="{{ url_postular }}?hv={{ perfil.hoja_vida_id }}" id="btn-postular">Postularme</a>{% endif %}
+  {% if url_adaptar %}<a class="btn btn-outline-primary" href="{{ url_adaptar }}?hv={{ perfil.hoja_vida_id }}" id="btn-adaptar">Adaptar mi HV a esta vacante</a>{% endif %}
+  {% if url_preparar %}<a class="btn btn-primary" href="{{ url_preparar }}">Prepararme para esta vacante</a>{% endif %}
+</div>
 {% endif %}
 {% endblock %}
