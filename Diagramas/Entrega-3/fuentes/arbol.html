@@ -1,0 +1,38 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;background:#fff;font-family:Consolas,"DejaVu Sans Mono",monospace;font-size:15px}
+.c{display:flex;gap:18px;padding:18px 22px}
+pre{margin:0;line-height:1.42}
+.k{color:#1F3864;font-weight:bold}.s3{color:#C0392B;font-weight:bold}.n{color:#7F8C8D}
+.l{display:inline-block;padding:0 6px;border-radius:4px;font-family:Helvetica,Arial,sans-serif;font-size:12px;margin-left:6px}
+.p{background:#EAF1FB;color:#2F5597}.ct{background:#E8F5E9;color:#2E7D32}.sv{background:#FFF8E1;color:#8a6d00}.ag{background:#FDEDEC;color:#C0392B}.dm{background:#F3E5F5;color:#6A1B9A}.in{background:#ECEFF1;color:#455A64}
+</style></head><body><div class="c"><pre>
+<span class="k">Ing-Sowtfare/</span>  <span class="n">(rama Sprint-3)</span>
+├── <span class="k">backend/</span>
+│   ├── manage.py · requirements.txt · Dockerfile · pytest.ini
+│   ├── <span class="k">config/</span>   settings.py (descubre apps/*) · urls.py (monta prefijo_url)
+│   ├── <span class="k">core/</span>                              <span class="n">núcleo compartido</span>
+│   │   ├── models.py                     <span class="l dm">Dominio / persistencia</span>
+│   │   ├── migrations/ 0001_initial · <span class="s3">0002_sprint3_…</span>
+│   │   ├── dominio/   requisitos.py · texto.py <span class="l dm">Reglas</span>
+│   │   ├── agentes/   base · grafo · supervisor · validador · trazador · registro <span class="l ag">Motor LangGraph</span>
+│   │   ├── llm/       base · mock · langchain_adapter · cache · fabrica <span class="l in">Adaptador LLM</span>
+│   │   ├── servicios/ copiloto (Facade) · cuota · cifrado · archivos · tareas <span class="l sv">Servicios</span>
+│   │   ├── plugins.py  <span class="s3">(menú por rol)</span> · middleware.py · context_processors.py
+│   │   └── management/commands/seed_demo.py <span class="s3">(+ reclutador y postulados)</span>
+│   └── <span class="k">apps/</span>                              <span class="n">una carpeta por Feature (plug-in)</span>
+│       ├── acceso_magneto/   F1  clientes.py <span class="l in">Adapter Magneto</span>  <span class="s3">+ HU04</span>
+│       ├── analisis_hv/      F2  extractor_texto.py · parser_hv.py
+│       ├── diagnostico_hv/   F3  rubrica.py
+│       ├── matching_vacantes/F4  embedder.py  <span class="s3">+ HU11 alertas, comando generar_alertas</span>
+│       ├── preparacion/      F7
+│       ├── <span class="s3">adaptacion_hv/    F5  HU12 · HU13 · HU14  (agente Redactor)</span>
+│       ├── <span class="s3">postulaciones/    F6  HU15 · HU18</span>
+│       └── <span class="s3">reclutador/       F8  HU19 · HU20  (permisos.py)</span>
+│           └── apps.py  urls.py  views.py <span class="l ct">Controlador</span>  forms.py  servicios.py <span class="l sv">Servicios</span>  agentes.py <span class="l ag">Nodos</span>  tests/
+├── <span class="k">frontend/</span>
+│   ├── templates/  base.html · partials/ · core/ · &lt;una carpeta por feature&gt;/ <span class="l p">Presentación</span>
+│   └── static/     css/app.css · js/app.js · &lt;feature&gt;/
+├── <span class="k">docs/</span>       GUIA_NUEVA_FEATURE.md · FUENTES_CRITERIOS.md · CRITERIOS_&lt;feature&gt;.md
+├── <span class="k">Diagramas/</span>  Entrega 2 + <span class="s3">Entrega-3/</span>
+└── docker-compose.yml · .env.example · README.md
+</pre></div></body></html>
