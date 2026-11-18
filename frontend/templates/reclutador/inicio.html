@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block titulo %}Mis vacantes{% endblock %}
+{% block contenido %}
+<h1 class="h3 mb-3">Mis vacantes publicadas</h1>
+{% if vacantes %}
+<div class="table-responsive">
+  <table class="table table-hover bg-white align-middle tabla-apilable" id="tabla-vacantes-reclutador">
+    <thead><tr><th>Vacante</th><th>Ciudad</th><th>Postulados</th><th>Por revisar</th><th>Estado</th><th class="text-end">Acción</th></tr></thead>
+    <tbody>
+    {% for v in vacantes %}
+      <tr class="fila-vacante-reclutador" data-vacante="{{ v.magneto_id }}">
+        <td data-etiqueta="Vacante"><strong>{{ v.titulo }}</strong><div class="small text-muted">{{ v.empresa }}</div></td>
+        <td data-etiqueta="Ciudad">{{ v.ciudad }}</td>
+        <td data-etiqueta="Postulados" class="postulados">{{ v.postulados }}</td>
+        <td data-etiqueta="Por revisar">{% if v.pendientes %}<span class="badge text-bg-warning">{{ v.pendientes }}</span>{% else %}0{% endif %}</td>
+        <td data-etiqueta="Estado">{% if v.activa %}Activa{% else %}Cerrada{% endif %}</td>
+        <td data-etiqueta="Acción" class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'reclutador:candidatos' v.pk %}">Ver candidatos</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  {% include "partials/_estado_vacio.html" with mensaje="Aún no tienes vacantes asignadas en Magneto." %}
+{% endif %}
+{% endblock %}

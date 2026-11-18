@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}Candidatos: {{ vacante.titulo }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta"><a href="{% url 'reclutador:inicio' %}">&larr; Mis vacantes</a></nav>
+<h1 class="h3 mt-3 mb-1">{{ vacante.titulo }}</h1>
+<p class="text-muted">{{ vacante.empresa }} · {{ vacante.ciudad }} · {{ total_requisitos }} requisitos</p>
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-8 col-md-3">
+    <label class="form-label" for="id_estado">Estado</label>
+    <select class="form-select" name="estado" id="id_estado">
+      {% for valor, texto in form.fields.estado.choices %}<option value="{{ valor }}"{% if form.estado.value == valor %} selected{% endif %}>{{ texto }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-4 col-md-auto d-grid"><button class="btn btn-outline-primary" type="submit">Filtrar</button></div>
+</form>
+{% if postulaciones %}
+<div class="table-responsive">
+  <table class="table table-hover bg-white align-middle tabla-apilable" id="tabla-candidatos">
+    <thead><tr><th>#</th><th>Candidato</th><th>Ajuste</th><th>Requisitos</th><th>HV</th><th>Estado</th><th class="text-end">Acción</th></tr></thead>
+    <tbody>
+    {% for p in postulaciones %}
+      <tr class="fila-candidato" data-score="{{ p.score }}">
+        <td data-etiqueta="#">{{ forloop.counter }}</td>
+        <td data-etiqueta="Candidato"><strong>{{ p.usuario.nombre_visible }}</strong><div class="small text-muted">Postulado el {{ p.fecha|date:"d/m/Y" }}</div></td>
+        <td data-etiqueta="Ajuste"><span class="badge {% if p.score >= 70 %}text-bg-success{% elif p.score >= 45 %}text-bg-warning{% else %}text-bg-secondary{% endif %} fs-6">{{ p.score|floatformat:0 }}%</span></td>
+        <td data-etiqueta="Requisitos">{{ p.cumple|length }} de {{ total_requisitos }}</td>
+        <td data-etiqueta="HV">{% if p.hv_adaptada %}Adaptada{% else %}Original{% endif %}</td>
+        <td data-etiqueta="Estado">{% include "postulaciones/partials/_estado.html" with estado=p.estado nombre=p.get_estado_display %}</td>
+        <td data-etiqueta="Acción" class="text-end"><a class="btn btn-sm btn-primary" href="{% url 'reclutador:evaluar' p.pk %}">Evaluar</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  {% include "partials/_estado_vacio.html" with mensaje="Todavía no hay candidatos postulados con ese filtro." %}
+{% endif %}
+{% endblock %}
