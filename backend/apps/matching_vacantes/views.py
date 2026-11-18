@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import NoReverseMatch, reverse
 from django.views.decorators.http import require_POST
 
-from core.models import AjusteVacante, Vacante
+from core.models import AjusteVacante, AlertaVacante, Vacante
 
 from . import servicios
 from .forms import FiltroVacantesForm
@@ -71,5 +71,42 @@ def detalle(request, pk):
     return render(request, "matching_vacantes/detalle.html", {
         "vacante": vacante, "perfil": perfil, "ajuste": ajuste, "total": total,
         "url_preparar": _url_opcional("preparacion:vacante", vacante.pk),
+        "url_postular": _url_opcional("postulaciones:nueva", vacante.pk),
+        "url_adaptar": _url_opcional("adaptacion_hv:vacante", vacante.pk),
         "url_cargar": _url_opcional("analisis_hv:cargar"),
     })
+
+
+@login_required
+def alertas(request):
+    """HU11: alertas de vacantes con alto ajuste; se revisan al entrar (y con el comando generar_alertas)."""
+    perfil = servicios.perfil_activo(request.user)
+    nuevas = []
+    if perfil is not None:
+        try:
+            nuevas = servicios.generar_alertas(request.user)
+        except RuntimeError:
+            messages.error(request, "No fue posible revisar vacantes nuevas. Intenta de nuevo.")
+    lista_alertas = (AlertaVacante.objects.filter(usuario=request.user, vacante__activa=True)
+                     .select_related("vacante"))
+    return render(request, "matching_vacantes/alertas.html", {
+        "perfil": perfil, "alertas": lista_alertas, "nuevas": len(nuevas), "umbral": servicios.umbral_alerta(),
+        "url_cargar": _url_opcional("analisis_hv:cargar"),
+    })
+
+
+@login_required
+@require_POST
+def marcar_alerta(request, pk):
+    alerta = get_object_or_404(AlertaVacante, pk=pk, usuario=request.user)
+    alerta.leida = True
+    alerta.save(update_fields=["leida"])
+    return redirect("matching_vacantes:alertas")
+
+
+@login_required
+@require_POST
+def marcar_todas(request):
+    AlertaVacante.objects.filter(usuario=request.user, leida=False).update(leida=True)
+    messages.success(request, "Marcaste todas las alertas como leídas.")
+    return redirect("matching_vacantes:alertas")

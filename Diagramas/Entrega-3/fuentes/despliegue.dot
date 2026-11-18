@@ -1,0 +1,29 @@
+digraph D {
+  rankdir=LR; compound=true; fontname="Helvetica"; nodesep=0.4; ranksep=0.7;
+  node [fontname="Helvetica", fontsize=10, shape=box3d, style=filled, fillcolor="#EEF3FB", color="#2F5597"];
+  edge [fontname="Helvetica", fontsize=9, color="#333333"];
+  subgraph cluster_cand { label="«device» Equipo del candidato (PC o celular)"; style="rounded"; color="#2F5597";
+    nav1 [label="«execution env»\nNavegador web\nHTML + CSS + JS (Bootstrap 5)", shape=component]; }
+  subgraph cluster_rec { label="«device» Equipo del reclutador"; style="rounded"; color="#C0392B";
+    nav2 [label="«execution env»\nNavegador web\nMódulo reclutador (Sprint 3)", shape=component, fillcolor="#FDEDEC", color="#C0392B"]; }
+  subgraph cluster_srv { label="«device» Servidor de aplicación (VM Linux)"; style="rounded"; color="#2F5597";
+    subgraph cluster_dc { label="«execution env» Docker Compose"; style="dashed";
+      web [label="«container» web\nGunicorn + Django 5.1\nLangGraph 1.2 + LangChain core\nPyMuPDF · python-docx · cryptography", shape=component];
+      cron [label="«artifact» tarea programada\nmanage.py generar_alertas\n(HU11, Sprint 3)", shape=note, fillcolor="#FDEDEC", color="#C0392B"];
+      db [label="«container» db\nPostgreSQL 16", shape=component];
+      vmedia [label="«volume» media/\nHV cifradas (Fernet)", shape=cylinder];
+      vpg [label="«volume» pgdata", shape=cylinder];
+    }
+  }
+  subgraph cluster_llm { label="«device» Nube del proveedor LLM"; style="rounded"; color="#2F5597";
+    llm [label="«service»\nAPI del modelo de lenguaje\n(apagado: LLM_PROVIDER=mock)", shape=component]; }
+  subgraph cluster_mag { label="«device» Plataforma Magneto"; style="rounded"; color="#2F5597";
+    mag [label="«service» API Magneto\nauth · perfil · HV (HU04) · vacantes · postulación (HU15)\nsimulada con MagnetoMockClient", shape=component]; }
+  nav1 -> web [label="HTTPS 443"];
+  nav2 -> web [label="HTTPS 443"];
+  cron -> web [label="invoca servicios", style=dashed];
+  web -> db [label="TCP 5432 / SQL"];
+  db -> vpg; web -> vmedia;
+  web -> llm [label="HTTPS 443 / REST JSON"];
+  web -> mag [label="HTTPS 443 / REST JSON"];
+}

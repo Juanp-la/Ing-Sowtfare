@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block titulo %}Mis postulaciones{% endblock %}
+{% block contenido %}
+<h1 class="h3 mb-3">Mis postulaciones</h1>
+<div class="d-flex flex-wrap gap-2 mb-3" id="resumen-estados">
+  {% for r in resumen %}<span class="badge text-bg-light border fs-6">{{ r.nombre }}: {{ r.total }}</span>{% endfor %}
+</div>
+<form method="get" class="row g-2 align-items-end mb-3" id="filtro-estado">
+  <div class="col-8 col-md-3">
+    <label class="form-label" for="id_estado">Estado</label>
+    <select class="form-select" name="estado" id="id_estado">
+      {% for valor, texto in form.fields.estado.choices %}<option value="{{ valor }}"{% if form.estado.value == valor %} selected{% endif %}>{{ texto }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-4 col-md-auto d-grid"><button class="btn btn-outline-primary" type="submit">Filtrar</button></div>
+</form>
+{% if postulaciones %}
+<div class="table-responsive">
+  <table class="table table-hover bg-white align-middle tabla-apilable" id="tabla-postulaciones">
+    <thead><tr><th>Vacante</th><th>Fecha</th><th>Ajuste</th><th>HV enviada</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
+    <tbody>
+    {% for p in postulaciones %}
+      <tr class="fila-postulacion" data-estado="{{ p.estado }}">
+        <td data-etiqueta="Vacante"><strong>{{ p.vacante.titulo }}</strong><div class="small text-muted">{{ p.vacante.empresa }}</div></td>
+        <td data-etiqueta="Fecha">{{ p.fecha|date:"d/m/Y" }}</td>
+        <td data-etiqueta="Ajuste">{{ p.score|floatformat:0 }}%</td>
+        <td data-etiqueta="HV enviada">{% if p.hv_adaptada %}Adaptada{% else %}Original{% endif %}</td>
+        <td data-etiqueta="Estado">{% include "postulaciones/partials/_estado.html" with estado=p.estado nombre=p.get_estado_display %}</td>
+        <td data-etiqueta="Acciones" class="text-end">
+          <div class="d-flex flex-wrap justify-content-end gap-1">
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'postulaciones:detalle' p.pk %}">Ver detalle</a>
+            {% if p.abierta %}<a class="btn btn-sm btn-outline-danger" href="{% url 'postulaciones:retirar' p.pk %}">Retirar</a>{% endif %}
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  {% include "partials/_estado_vacio.html" with mensaje="No tienes postulaciones con ese filtro." url_accion=url_vacantes texto_accion="Buscar vacantes" %}
+{% endif %}
+{% endblock %}

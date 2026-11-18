@@ -1,0 +1,6 @@
+{% load alertas_tags %}{% alertas_sin_leer user as pendientes %}
+{% if pendientes %}
+<a href="{% url 'matching_vacantes:alertas' %}" class="badge rounded-pill text-bg-warning text-decoration-none" id="indicador-alertas" title="Vacantes nuevas con alto ajuste">
+  {{ pendientes }} alerta{{ pendientes|pluralize }}
+</a>
+{% endif %}

@@ -10,6 +10,6 @@ class DiagnosticoHvConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     prefijo_url = "diagnostico/"
     menu = [
-        {"titulo": "Diagnóstico", "url": "diagnostico_hv:inicio", "orden": 30},
-        {"titulo": "Trazabilidad", "url": "diagnostico_hv:trazabilidad", "orden": 80},
+        {"titulo": "Diagnóstico", "url": "diagnostico_hv:inicio", "orden": 30, "roles": ["candidato", "admin"]},
+        {"titulo": "Trazabilidad", "url": "diagnostico_hv:trazabilidad", "orden": 80, "roles": ["candidato", "admin"]},
     ]

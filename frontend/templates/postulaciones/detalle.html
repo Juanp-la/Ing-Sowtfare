@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block titulo %}Postulación: {{ p.vacante.titulo }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta"><a href="{% url 'postulaciones:lista' %}">&larr; Mis postulaciones</a></nav>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-2 mt-3 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ p.vacante.titulo }}</h1>
+    <p class="text-muted mb-0">{{ p.vacante.empresa }} · Código Magneto {{ p.magneto_id }}</p>
+  </div>
+  <div id="estado-actual">{% include "postulaciones/partials/_estado.html" with estado=p.estado nombre=p.get_estado_display %}</div>
+</div>
+<ol class="list-group list-group-numbered mb-3" id="seguimiento">
+  <li class="list-group-item">Enviada el {{ p.fecha|date:"d/m/Y H:i" }} con tu HV {% if p.hv_adaptada %}adaptada{% else %}original{% endif %} (ajuste {{ p.score|floatformat:0 }} %).</li>
+  <li class="list-group-item{% if p.estado == 'enviada' %} text-muted{% endif %}">En revisión por el reclutador{% if p.estado == 'enviada' %} (pendiente){% endif %}.</li>
+  <li class="list-group-item{% if not p.decidida %} text-muted{% endif %}">Decisión: {% if p.decidida %}<strong>{{ p.get_estado_display }}</strong> ({{ p.fecha_actualizacion|date:"d/m/Y" }}){% else %}pendiente{% endif %}.</li>
+</ol>
+{% if p.decidida %}
+<div class="card shadow-sm mb-3 {% if p.estado == 'apto' %}border-success{% else %}border-danger{% endif %}" id="retroalimentacion">
+  <div class="card-body">
+    <h2 class="h5">Retroalimentación del reclutador</h2>
+    {% if p.comentario_reclutador %}<p id="comentario-reclutador">«{{ p.comentario_reclutador }}»</p>{% endif %}
+    {% if p.retroalimentacion %}
+    <ul class="mb-0">{% for r in p.retroalimentacion %}<li class="item-retro"><strong>{{ r.requisito }}</strong>: {{ r.sugerencia }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if p.estado == 'no_apto' and url_preparar %}<a class="btn btn-outline-primary mt-3" href="{{ url_preparar }}">Ver mi plan de mejora</a>{% endif %}
+  </div>
+</div>
+{% endif %}
+<div class="row g-3">
+  <div class="col-12 col-md-6"><div class="card h-100"><div class="card-header bg-success-subtle">Requisitos que cumples ({{ p.cumple|length }})</div>
+    <ul class="list-group list-group-flush">{% for r in p.cumple %}<li class="list-group-item">{{ r.requisito }}</li>{% empty %}<li class="list-group-item text-muted">Ninguno.</li>{% endfor %}</ul></div></div>
+  <div class="col-12 col-md-6"><div class="card h-100"><div class="card-header bg-danger-subtle">Requisitos que no cumples ({{ p.no_cumple|length }})</div>
+    <ul class="list-group list-group-flush">{% for r in p.no_cumple %}<li class="list-group-item">{{ r.requisito }}</li>{% empty %}<li class="list-group-item text-success">¡Ninguno!</li>{% endfor %}</ul></div></div>
+</div>
+{% if p.abierta %}<a class="btn btn-outline-danger mt-3" href="{% url 'postulaciones:retirar' p.pk %}">Retirar postulación</a>{% endif %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block titulo %}Postularme: {{ vacante.titulo }}{% endblock %}
+{% block contenido %}
+<h1 class="h3 mb-1">Postularme a {{ vacante.titulo }}</h1>
+<p class="text-muted">{{ vacante.empresa }} · {{ vacante.ciudad }} · {{ vacante.get_modalidad_display }}</p>
+{% if error %}{% include "partials/_error.html" with mensaje=error %}{% endif %}
+{% if not perfiles %}
+  {% include "partials/_estado_vacio.html" with mensaje="Necesitas una hoja de vida analizada para postularte." url_accion=url_cargar texto_accion="Cargar mi HV" %}
+{% else %}
+<form method="post" class="card card-body shadow-sm" id="form-postular">
+  {% csrf_token %}
+  <fieldset>
+    <legend class="h6">¿Qué hoja de vida quieres enviar?</legend>
+    {% for o in opciones %}
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="hv_enviar" id="{{ o.valor }}" value="{{ o.valor }}"{% if o.valor == seleccion %} checked{% endif %}>
+      <label class="form-check-label" for="{{ o.valor }}">{{ o.etiqueta }}{% if o.recomendada %} <span class="badge text-bg-success">Recomendada</span>{% endif %}</label>
+    </div>
+    {% endfor %}
+  </fieldset>
+  {% if not adaptadas and url_adaptar %}<p class="small mt-2 mb-0">¿Quieres mejorar tu opción? <a href="{{ url_adaptar }}">Adapta tu HV a esta vacante</a> antes de postularte.</p>{% endif %}
+  <p class="small text-muted mt-3">Al confirmar, enviamos tu postulación a Magneto con la HV elegida. Solo puedes postularte una vez a cada vacante.</p>
+  <div><button class="btn btn-success" type="submit" id="btn-confirmar-postulacion">Confirmar postulación</button></div>
+</form>
+{% endif %}
+{% endblock %}

@@ -12,7 +12,7 @@ def test_ca1_base_tiene_viewport_bootstrap_y_menu_colapsable():
     navbar = (PLANTILLAS / "partials" / "_navbar.html").read_text(encoding="utf-8")
     assert '<meta name="viewport" content="width=device-width, initial-scale=1">' in base
     assert "bootstrap@5" in base and "bootstrap.bundle.min.js" in base
-    assert "navbar-expand-lg" in navbar and "navbar-toggler" in navbar and 'class="collapse navbar-collapse"' in navbar
+    assert "navbar-expand-xxl" in navbar and "navbar-toggler" in navbar and 'class="collapse navbar-collapse"' in navbar
 
 
 def test_ca2_toda_tabla_es_desplazable_o_apilable_en_celular():

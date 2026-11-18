@@ -1,0 +1,17 @@
+digraph G {
+  rankdir=LR; fontname="Helvetica"; nodesep=0.25; ranksep=0.45;
+  node [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled", fillcolor="#EEF3FB", color="#2F5597"];
+  edge [fontname="Helvetica", fontsize=9, arrowhead=vee];
+  S [label="START", shape=circle, fillcolor="#333333", fontcolor=white, width=0.5];
+  E [label="END", shape=doublecircle, fillcolor="#333333", fontcolor=white, width=0.4];
+  cuota [label="control_cuota\n(NF04)"]; sup [label="supervisor\n(ruta por intención)"];
+  ext [label="extractor"]; vext [label="validador_extractor\n(NF03)"];
+  eva [label="evaluador"]; mat [label="matcher"]; coach [label="coach"];
+  red [label="redactor\n(Sprint 3)", fillcolor="#FDEDEC", color="#C0392B"]; vred [label="validador_redactor\n(NF03, Sprint 3)", fillcolor="#FDEDEC", color="#C0392B"];
+  S -> cuota; cuota -> E [label="sin cupo", style=dashed]; cuota -> sup [label="ok"];
+  sup -> ext [label="extraer_perfil"]; ext -> vext; vext -> E;
+  sup -> eva [label="diagnosticar"]; eva -> E;
+  sup -> mat [label="buscar_vacantes\n(HU08, HU11, HU15)"]; mat -> E;
+  sup -> coach [label="preparar"]; coach -> E;
+  sup -> red [label="adaptar_hv (HU12)", color="#C0392B", fontcolor="#C0392B"]; red -> vred [color="#C0392B"]; vred -> E [color="#C0392B"];
+}

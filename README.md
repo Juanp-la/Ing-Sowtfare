@@ -59,9 +59,24 @@ profesionales en transición de sector. Usuario secundario: el reclutador de la 
 
 En el Sprint 2 Magneto se simula con un adaptador (mock) y el LLM es falso y determinista por defecto.
 
-### 1.5 Fuera de alcance (Sprint 3)
-Features 5 (Adaptación de HV, agente Redactor), 6 (Postulación y seguimiento) y 8 (Módulo reclutador):
-HU04, HU11, HU12, HU13, HU14, HU15, HU18, HU19 y HU20 (65 SP). Tampoco hay OCR para HV escaneadas.
+### 1.5 Alcance del Sprint 3 (Entrega 3: producto funcional)
+9 historias, 65 SP (el resto del backlog: 167 SP en total). Los SP por historia son una propuesta del equipo: en este
+sprint no hubo planning poker.
+
+| Feature | UH | SP propuestos |
+|---|---|---|
+| F1 Acceso e integración Magneto | HU04 Usar la HV de mi perfil de Magneto | 5 |
+| F4 Matching de vacantes | HU11 Alertas de vacantes nuevas con alto ajuste | 8 |
+| F5 Adaptación de HV (agente Redactor) | HU12 Adaptar la HV a una vacante, HU13 Original y adaptada lado a lado, HU14 Aprobar o rechazar cambios | 13 + 5 + 5 |
+| F6 Postulación y seguimiento | HU15 Postularme desde el copiloto, HU18 Estado de mis postulaciones | 8 + 5 |
+| F8 Módulo reclutador | HU19 Candidatos ordenados por ajuste, HU20 Apto / no apto con retroalimentación | 8 + 8 |
+
+Cambios de núcleo del Sprint 3 (acordados para todas las ramas): migración `0002` con `AlertaVacante`, `HVAdaptada`,
+`Postulacion`, `HojaVida.origen/huella` y `Vacante.reclutador`; menú filtrado por rol (`"roles"` en `menu`);
+`MagnetoClient` con `obtener_hv` y `postular`.
+
+### 1.6 Fuera de alcance
+Cliente real de Magneto (no hay API pública), LLM real activado por defecto y OCR para HV escaneadas.
 
 ## 2. Estructura del repositorio y ramas
 
@@ -77,7 +92,7 @@ main
  │    ├── feature-4-matching-de-vacantes-agente-matcher
  │    ├── feature-7-preparacion-agente-coach
  │    └── ajuste-ui-ux-sprint2
- └── Sprint-3
+ └── Sprint-3            (un commit por Feature: núcleo, F1 HU04, F4 HU11, F5, F6, F8 y documentación)
 ```
 
 Regla de Pull Request: **Feature → Sprint-N → main**. Cada Feature se integra a su rama de sprint con un PR revisado;
@@ -110,8 +125,11 @@ backend/
     acceso_magneto/     F1: MagnetoClient + MagnetoMockClient, login, panel de cuota
     analisis_hv/        F2: ExtractorTexto (PDF/Word), agente Extractor, perfil editable, borrado
     diagnostico_hv/     F3: rúbrica, agente Evaluador, progreso, trazabilidad
-    matching_vacantes/  F4: Embedder local, agente Matcher, filtros, detalle de ajuste
+    matching_vacantes/  F4: Embedder local, agente Matcher, filtros, detalle de ajuste, alertas (HU11)
     preparacion/        F7: agente Coach, preguntas y plan de mejora
+    adaptacion_hv/      F5 (Sprint 3): agente Redactor + ValidadorRedactor, comparación y decisiones, Word
+    postulaciones/      F6 (Sprint 3): postulación a Magneto, seguimiento y retiro
+    reclutador/         F8 (Sprint 3): vacantes del reclutador, candidatos por ajuste, apto / no apto
 frontend/
   templates/  base.html, partials/, 403.html, 404.html, 500.html, core/ y una carpeta por feature
   static/     css/app.css, js/app.js, img/brand/ (logos), vendor/bootstrap@5.3.3/, y estáticos por feature
@@ -197,8 +215,12 @@ python manage.py seed_demo
 python manage.py runserver
 ```
 
-`seed_demo` crea un usuario demo, una HV sintética y 12 vacantes sintéticas, e imprime en consola el correo y una
-clave nueva en cada ejecución (no se guarda en ningún archivo). Use esas credenciales: ver salida de `seed_demo`.
+`seed_demo` crea un usuario demo (candidata), un usuario reclutador, una HV sintética, 12 vacantes sintéticas
+asignadas al reclutador y 3 candidatos sintéticos ya postulados, e imprime en consola los correos y una clave nueva
+por usuario en cada ejecución (no se guarda en ningún archivo). Use esas credenciales: ver salida de `seed_demo`.
+
+Alertas periódicas (HU11): `python manage.py generar_alertas` (se puede programar con cron o el Programador de
+tareas de Windows). También se generan al abrir la página «Alertas».
 
 ### 4.5 Modo Docker Compose
 No hay que crear ninguna base de datos: el compose levanta PostgreSQL 16 y crea la base `copiloto`. La única
@@ -254,6 +276,11 @@ docker compose exec web python manage.py seed_demo
 | http://127.0.0.1:8000/vacantes/ | Vacantes ordenadas por ajuste, filtros y detalle |
 | http://127.0.0.1:8000/preparacion/ | Preguntas de entrevista y plan de mejora |
 | http://127.0.0.1:8000/magneto/consumo/ | Consumo de la cuota de tokens |
+| http://127.0.0.1:8000/magneto/hv/ | HU04: usar la HV del perfil de Magneto |
+| http://127.0.0.1:8000/vacantes/alertas/ | HU11: alertas de vacantes con alto ajuste |
+| http://127.0.0.1:8000/adaptacion/ | HU12-HU14: adaptar la HV, comparar y decidir |
+| http://127.0.0.1:8000/postulaciones/ | HU15, HU18: mis postulaciones |
+| http://127.0.0.1:8000/reclutador/ | HU19, HU20: módulo reclutador (entrar con el usuario reclutador del seed) |
 | http://127.0.0.1:8000/admin/ | Administración de Django (requiere `createsuperuser`) |
 
 ### 4.7 Troubleshooting
@@ -374,6 +401,13 @@ Demo manual (Sección 6 del informe):
 3. **Formulario lanzado desde una lista que inserta, actualiza y borra:** en "Mis hojas de vida", "Cargar nueva HV"
    inserta, "Editar perfil" actualiza el perfil extraído (se guarda solo al confirmar) y "Eliminar" borra la HV con
    sus datos tras confirmar.
+
+Demo del Sprint 3 (Sección 7 de la Entrega 3):
+1. Como candidata: «Mis hojas de vida» → «Usar mi HV de Magneto» (HU04); «Alertas» (HU11).
+2. «Adaptar HV» → «Adaptar mi HV» en una vacante → comparar lado a lado (HU12, HU13) → aprobar o rechazar cada
+   cambio y «Aplicar mis decisiones» (HU14) → «Postularme con esta versión» (HU15) → «Mis postulaciones» (HU18).
+3. Como reclutador: «Mis vacantes» → «Ver candidatos» ordenados por ajuste (HU19) → «Evaluar» → apto o no apto con
+   comentario (HU20). La candidata ve la decisión y la retroalimentación en el detalle de su postulación.
 
 ## 6. Gestión del proyecto
 - **GitHub Projects (Kanban):** https://github.com/users/Juanp-la/projects/3 con columnas Backlog, For Start,

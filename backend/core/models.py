@@ -47,6 +47,10 @@ def ruta_archivo_hv(instancia, nombre):
 
 
 class HojaVida(models.Model):
+    class Origen(models.TextChoices):
+        CARGA = "carga", "Carga manual"
+        MAGNETO = "magneto", "Perfil de Magneto"
+
     class Formato(models.TextChoices):
         PDF = "pdf", "PDF"
         DOCX = "docx", "Word (.docx)"
@@ -64,6 +68,9 @@ class HojaVida(models.Model):
     tamano_bytes = models.PositiveIntegerField(default=0)
     texto_extraido = TextoCifradoField(blank=True, default="")
     estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.CARGADA)
+    origen = models.CharField(max_length=20, choices=Origen.choices, default=Origen.CARGA)
+    # SHA-256 del archivo traído de Magneto (HU04): evita importar dos veces la misma HV.
+    huella = models.CharField(max_length=64, blank=True, db_index=True)
     fecha_carga = models.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -165,6 +172,10 @@ class Vacante(models.Model):
     requisitos = models.JSONField(default=list, blank=True)
     activa = models.BooleanField(default=True)
     fecha_publicacion = models.DateField(default=timezone.localdate)
+    reclutador = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, related_name="vacantes_publicadas",
+        null=True, blank=True,
+    )
 
     class Meta:
         verbose_name = "vacante"
@@ -233,6 +244,98 @@ class PreguntaEntrevista(models.Model):
 
     def __str__(self):
         return self.pregunta[:60]
+
+
+class AlertaVacante(models.Model):
+    """HU11: aviso de una vacante con alto ajuste que el candidato aún no había recibido."""
+
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="alertas")
+    vacante = models.ForeignKey(Vacante, on_delete=models.CASCADE, related_name="alertas")
+    score = models.FloatField(default=0)
+    leida = models.BooleanField(default=False, db_index=True)
+    fecha = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = "alerta de vacante"
+        verbose_name_plural = "alertas de vacantes"
+        ordering = ["leida", "-score", "-fecha"]
+        constraints = [models.UniqueConstraint(fields=["usuario", "vacante"], name="alerta_unica_usuario_vacante")]
+
+    def __str__(self):
+        return f"Alerta {self.score:.0f} vacante {self.vacante_id} para {self.usuario_id}"
+
+
+class HVAdaptada(models.Model):
+    """HU12-HU14: propuesta del agente Redactor para una vacante; nada se aplica sin aprobación."""
+
+    class Estado(models.TextChoices):
+        PENDIENTE = "pendiente", "Pendiente de revisión"
+        APLICADA = "aplicada", "Aplicada"
+        DESCARTADA = "descartada", "Descartada"
+
+    hoja_vida = models.ForeignKey(HojaVida, on_delete=models.CASCADE, related_name="adaptaciones")
+    vacante = models.ForeignKey(Vacante, on_delete=models.CASCADE, related_name="adaptaciones")
+    # Cada cambio: {id, seccion, titulo, original, propuesta, motivo, decision}
+    cambios = JSONCifradoField(default=list, blank=True)
+    perfil_adaptado = JSONCifradoField(default=dict, blank=True)
+    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.PENDIENTE)
+    ejecucion_id = models.CharField(max_length=36, blank=True, db_index=True)
+    fecha = models.DateTimeField(default=timezone.now)
+    fecha_decision = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "hoja de vida adaptada"
+        verbose_name_plural = "hojas de vida adaptadas"
+        ordering = ["-fecha", "-id"]
+
+    def __str__(self):
+        return f"Adaptación {self.pk} de HV {self.hoja_vida_id} a vacante {self.vacante_id}"
+
+
+class Postulacion(models.Model):
+    """HU15, HU18-HU20: postulación hecha desde el copiloto y su seguimiento."""
+
+    class Estado(models.TextChoices):
+        ENVIADA = "enviada", "Enviada"
+        EN_REVISION = "en_revision", "En revisión"
+        APTO = "apto", "Apto"
+        NO_APTO = "no_apto", "No apto"
+
+    ABIERTOS = (Estado.ENVIADA, Estado.EN_REVISION)
+
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="postulaciones")
+    vacante = models.ForeignKey(Vacante, on_delete=models.CASCADE, related_name="postulaciones")
+    hoja_vida = models.ForeignKey(HojaVida, on_delete=models.SET_NULL, related_name="postulaciones",
+                                  null=True, blank=True)
+    hv_adaptada = models.ForeignKey(HVAdaptada, on_delete=models.SET_NULL, related_name="postulaciones",
+                                    null=True, blank=True)
+    perfil_enviado = JSONCifradoField(default=dict, blank=True)
+    score = models.FloatField(default=0)
+    cumple = models.JSONField(default=list, blank=True)
+    no_cumple = models.JSONField(default=list, blank=True)
+    magneto_id = models.CharField(max_length=64, blank=True)
+    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.ENVIADA, db_index=True)
+    comentario_reclutador = models.TextField(blank=True)
+    retroalimentacion = models.JSONField(default=list, blank=True)
+    fecha = models.DateTimeField(default=timezone.now)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "postulación"
+        verbose_name_plural = "postulaciones"
+        ordering = ["-fecha", "-id"]
+        constraints = [models.UniqueConstraint(fields=["usuario", "vacante"], name="postulacion_unica_usuario_vacante")]
+
+    def __str__(self):
+        return f"Postulación {self.pk} ({self.estado})"
+
+    @property
+    def abierta(self):
+        return self.estado in self.ABIERTOS
+
+    @property
+    def decidida(self):
+        return self.estado in (self.Estado.APTO, self.Estado.NO_APTO)
 
 
 class EjecucionAgente(models.Model):

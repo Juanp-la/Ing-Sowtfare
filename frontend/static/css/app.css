@@ -12,3 +12,10 @@
   .tabla-apilable td { display: flex; justify-content: space-between; gap: 1rem; border: 0; }
   .tabla-apilable td::before { content: attr(data-etiqueta); font-weight: 600; }
 }
+
+/* Barra superior: con las features del Sprint 3 el menú tiene hasta 9 entradas. */
+@media (min-width: 1400px) {
+  .menu-principal .nav-link { font-size: .88rem; padding-left: .25rem !important; padding-right: .25rem !important; }
+  #nombre-candidato { font-size: .9rem; }
+  .navbar-brand { font-size: 1.1rem; margin-right: .75rem; }
+}

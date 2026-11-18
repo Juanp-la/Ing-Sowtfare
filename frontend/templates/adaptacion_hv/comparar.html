@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block titulo %}Original vs adaptada{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta"><a href="{% url 'adaptacion_hv:inicio' %}">&larr; Adaptar HV</a></nav>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-2 mt-3 mb-3">
+  <div>
+    <h1 class="h3 mb-1">Tu HV para {{ adaptacion.vacante.titulo }}</h1>
+    <p class="text-muted mb-0">{{ adaptacion.vacante.empresa }} · <span class="badge {% if adaptacion.estado == 'aplicada' %}text-bg-success{% elif adaptacion.estado == 'pendiente' %}text-bg-warning{% else %}text-bg-secondary{% endif %}" id="estado-adaptacion">{{ adaptacion.get_estado_display }}</span></p>
+  </div>
+  {% if adaptacion.estado == 'aplicada' %}
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'adaptacion_hv:descargar' adaptacion.pk %}" id="btn-descargar">Descargar Word</a>
+    {% if url_postular %}<a class="btn btn-success" href="{{ url_postular }}?adaptacion={{ adaptacion.pk }}" id="btn-postular-adaptada">Postularme con esta versión</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% if error %}{% include "partials/_error.html" with mensaje=error %}{% endif %}
+
+{% if not filas %}
+  {% include "partials/_estado_vacio.html" with mensaje="No hay cambios que proponer: tu hoja de vida ya está orientada a esta vacante." %}
+{% else %}
+<form method="post" id="form-decisiones">
+  {% csrf_token %}
+  {% for f in filas %}
+  <div class="card shadow-sm mb-3 cambio" id="cambio-{{ f.id }}">
+    <div class="card-header d-flex flex-column flex-md-row justify-content-between gap-2">
+      <div><strong>{{ f.titulo }}</strong><div class="small text-muted">{{ f.motivo }}</div></div>
+      {% if adaptacion.estado == 'pendiente' %}
+      <div class="btn-group" role="group" aria-label="Decisión sobre {{ f.titulo }}">
+        <input type="radio" class="btn-check" name="decision_{{ f.id }}" id="aprobar_{{ f.id }}" value="aprobar" autocomplete="off">
+        <label class="btn btn-sm btn-outline-success" for="aprobar_{{ f.id }}">Aprobar</label>
+        <input type="radio" class="btn-check" name="decision_{{ f.id }}" id="rechazar_{{ f.id }}" value="rechazar" autocomplete="off">
+        <label class="btn btn-sm btn-outline-danger" for="rechazar_{{ f.id }}">Rechazar</label>
+      </div>
+      {% else %}
+      <span class="badge decision {% if f.decision == 'aprobar' %}text-bg-success{% else %}text-bg-secondary{% endif %}">{% if f.decision == 'aprobar' %}Aprobado{% else %}Rechazado{% endif %}</span>
+      {% endif %}
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-12 col-md-6 columna-original">
+          <h3 class="h6 text-muted">Original</h3>
+          {% if f.es_lista %}
+            {% if f.original_items %}<ol class="mb-0">{% for i in f.original_items %}<li>{{ i.texto }}</li>{% endfor %}</ol>{% else %}<p class="text-muted fst-italic mb-0">(no existe en tu HV)</p>{% endif %}
+          {% else %}
+            <p class="mb-0">{{ f.original|default:"(vacío)" }}</p>
+          {% endif %}
+        </div>
+        <div class="col-12 col-md-6 columna-adaptada">
+          <h3 class="h6 text-primary">Adaptada</h3>
+          {% if f.es_lista %}
+            <ol class="mb-0">{% for i in f.propuesta_items %}<li>{% if i.nuevo %}<mark class="nuevo">{{ i.texto }}</mark>{% elif i.movido %}<span class="fw-semibold movido">{{ i.texto }}</span> <span class="small text-muted">(movido)</span>{% else %}{{ i.texto }}{% endif %}</li>{% endfor %}</ol>
+          {% else %}
+            <p class="mb-0">{% for p in f.propuesta_partes %}{% if p.nuevo %}<mark class="nuevo">{{ p.texto }}</mark>{% else %}{{ p.texto }}{% endif %} {% endfor %}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% if adaptacion.estado == 'pendiente' %}
+  <p class="small text-muted">Nada se aplica hasta que decidas cada cambio. Tu HV original no se modifica.</p>
+  <button class="btn btn-primary" type="submit" id="btn-aplicar">Aplicar mis decisiones</button>
+  {% endif %}
+</form>
+{% endif %}
+{% endblock %}

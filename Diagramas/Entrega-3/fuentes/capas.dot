@@ -1,0 +1,13 @@
+digraph C {
+  node [shape=plain, fontname="Helvetica"];
+  capas [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="4" CELLPADDING="10">
+<TR><TD BGCOLOR="#EAF1FB" COLOR="#2F5597" WIDTH="620"><B>Presentación</B> · Django Templates + Bootstrap 5<BR/><FONT POINT-SIZE="10">frontend/templates/&lt;app&gt;/ · base.html con menú filtrado por rol · tablas apilables en celular (NF06)</FONT></TD>
+    <TD ROWSPAN="6" BGCOLOR="#ECEFF1" COLOR="#455A64" WIDTH="210"><B>Núcleo transversal</B><BR/><BR/><FONT POINT-SIZE="10">core/plugins.py<BR/>(descubre features)<BR/><BR/>Seguridad: CSRF, login,<BR/>roles, cifrado Fernet<BR/><BR/>Logs sin datos<BR/>personales<BR/><BR/>Pruebas: pytest +<BR/>fábricas sintéticas</FONT></TD></TR>
+<TR><TD BGCOLOR="#E8F5E9" COLOR="#2E7D32"><B>Controladores</B> · Django views + urls + forms<BR/><FONT POINT-SIZE="10">apps/&lt;app&gt;/views.py · @login_required · @reclutador_requerido (Sprint 3)</FONT></TD></TR>
+<TR><TD BGCOLOR="#FFF8E1" COLOR="#B7950B"><B>Servicios de aplicación</B><BR/><FONT POINT-SIZE="10">apps/&lt;app&gt;/servicios.py: importar_hv · generar_alertas · adaptar · decidir · postular · candidatos_por_ajuste<BR/>core/servicios: CopilotoService (Facade) · ControlCuota · cifrado · tareas</FONT></TD></TR>
+<TR><TD BGCOLOR="#FDEDEC" COLOR="#C0392B"><B>Motor de agentes</B> · LangGraph<BR/><FONT POINT-SIZE="10">GrafoCopiloto: control_cuota → supervisor → nodos por intención<BR/>Extractor · Evaluador · Matcher · Coach · Redactor (S3) · Validadores NF03 · Trazador NF05</FONT></TD></TR>
+<TR><TD BGCOLOR="#F3E5F5" COLOR="#6A1B9A"><B>Dominio y persistencia</B> · Django ORM<BR/><FONT POINT-SIZE="10">core/models.py (13 modelos, migraciones 0001 y 0002) · core/dominio (requisitos, texto)</FONT></TD></TR>
+<TR><TD BGCOLOR="#F5F5F5" COLOR="#616161"><B>Infraestructura y adaptadores</B><BR/><FONT POINT-SIZE="10">SQLite (desarrollo) / PostgreSQL 16 (Docker) · LLMClient: Mock · LangChain · Caché · MagnetoClient: MagnetoMockClient</FONT></TD></TR>
+</TABLE>>];
+}

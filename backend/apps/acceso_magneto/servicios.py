@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.db.models import Count, Sum
 
-from core.models import EjecucionAgente, Usuario
+from core.models import EjecucionAgente, HojaVida, Usuario
+from core.servicios.archivos import guardar_archivo_hv
 from core.servicios.cuota import ControlCuota
 
 
@@ -31,3 +32,22 @@ def consumo_por_agente(usuario):
         .annotate(tokens=Sum("tokens"), ejecuciones=Count("id"))
         .order_by("-tokens", "agente")
     )
+
+
+def importar_hv_magneto(usuario, cliente):
+    """HU04: trae la HV del perfil de Magneto sin volver a cargarla.
+
+    Devuelve (hoja_vida, creada). Si esa misma HV ya se importó (misma huella), devuelve la existente.
+    Devuelve (None, False) si la cuenta no tiene HV en Magneto.
+    """
+    archivo = cliente.obtener_hv(usuario.magneto_id)
+    if archivo is None:
+        return None, False
+    existente = HojaVida.objects.filter(usuario=usuario, origen=HojaVida.Origen.MAGNETO, huella=archivo.huella).first()
+    if existente:
+        return existente, False
+    hv = HojaVida(usuario=usuario, nombre_archivo=archivo.nombre[:255], formato=archivo.formato,
+                  origen=HojaVida.Origen.MAGNETO, huella=archivo.huella)
+    guardar_archivo_hv(hv, archivo.contenido)
+    hv.save()
+    return hv, True

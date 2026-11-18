@@ -1,0 +1,89 @@
+erDiagram
+    CORE_USUARIO ||--o{ CORE_HOJAVIDA : carga
+    CORE_HOJAVIDA ||--o| CORE_PERFILEXTRAIDO : genera
+    CORE_HOJAVIDA ||--o{ CORE_DIAGNOSTICO : tiene
+    CORE_DIAGNOSTICO ||--o{ CORE_HALLAZGO : contiene
+    CORE_PERFILEXTRAIDO ||--o{ CORE_AJUSTEVACANTE : calcula
+    CORE_VACANTE ||--o{ CORE_AJUSTEVACANTE : evalua
+    CORE_USUARIO ||--o{ CORE_ALERTAVACANTE : recibe
+    CORE_VACANTE ||--o{ CORE_ALERTAVACANTE : origina
+    CORE_HOJAVIDA ||--o{ CORE_HVADAPTADA : adapta
+    CORE_VACANTE ||--o{ CORE_HVADAPTADA : para
+    CORE_USUARIO ||--o{ CORE_POSTULACION : hace
+    CORE_VACANTE ||--o{ CORE_POSTULACION : recibe
+    CORE_HVADAPTADA |o--o{ CORE_POSTULACION : enviada_en
+    CORE_USUARIO |o--o{ CORE_VACANTE : recluta
+    CORE_HOJAVIDA ||--o{ CORE_PLANMEJORA : tiene
+    CORE_HOJAVIDA ||--o{ CORE_PREGUNTAENTREVISTA : tiene
+    CORE_USUARIO ||--o{ CORE_EJECUCIONAGENTE : consume
+    CORE_USUARIO { bigint id PK
+        varchar email UK
+        varchar rol
+        varchar magneto_id UK
+        int cuota_tokens_mes }
+    CORE_HOJAVIDA { bigint id PK
+        bigint usuario_id FK
+        text nombre_archivo "cifrado"
+        text texto_extraido "cifrado"
+        varchar estado
+        varchar origen "S3"
+        varchar huella "S3"
+        datetime fecha_carga }
+    CORE_PERFILEXTRAIDO { bigint id PK
+        bigint hoja_vida_id FK
+        text datos "JSON cifrado"
+        bool confirmado }
+    CORE_VACANTE { bigint id PK
+        varchar magneto_id UK
+        varchar titulo
+        varchar ciudad
+        varchar modalidad
+        json requisitos
+        bigint reclutador_id FK "S3"
+        bool activa }
+    CORE_AJUSTEVACANTE { bigint id PK
+        bigint perfil_id FK
+        bigint vacante_id FK
+        float score
+        json cumple
+        json no_cumple }
+    CORE_ALERTAVACANTE { bigint id PK
+        bigint usuario_id FK
+        bigint vacante_id FK
+        float score
+        bool leida }
+    CORE_HVADAPTADA { bigint id PK
+        bigint hoja_vida_id FK
+        bigint vacante_id FK
+        text cambios "JSON cifrado"
+        text perfil_adaptado "JSON cifrado"
+        varchar estado }
+    CORE_POSTULACION { bigint id PK
+        bigint usuario_id FK
+        bigint vacante_id FK
+        bigint hoja_vida_id FK
+        bigint hv_adaptada_id FK
+        text perfil_enviado "JSON cifrado"
+        float score
+        varchar estado
+        text comentario_reclutador
+        json retroalimentacion }
+    CORE_DIAGNOSTICO { bigint id PK
+        bigint hoja_vida_id FK
+        smallint puntaje
+        varchar nivel }
+    CORE_HALLAZGO { bigint id PK
+        bigint diagnostico_id FK
+        varchar prioridad }
+    CORE_PLANMEJORA { bigint id PK
+        bigint hoja_vida_id FK
+        json acciones }
+    CORE_PREGUNTAENTREVISTA { bigint id PK
+        bigint hoja_vida_id FK
+        text pregunta }
+    CORE_EJECUCIONAGENTE { bigint id PK
+        bigint usuario_id FK
+        varchar agente
+        varchar entrada_hash
+        int tokens
+        int duracion_ms }

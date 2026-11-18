@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block titulo %}Eliminar adaptación{% endblock %}
+{% block contenido %}
+<h1 class="h3">Eliminar adaptación</h1>
+<p>¿Eliminar la adaptación de tu HV para <strong>{{ adaptacion.vacante.titulo }}</strong>? Tu HV original no se borra.</p>
+<form method="post" class="d-flex gap-2">
+  {% csrf_token %}
+  <button class="btn btn-danger" type="submit">Sí, eliminar</button>
+  <a class="btn btn-outline-secondary" href="{% url 'adaptacion_hv:inicio' %}">Cancelar</a>
+</form>
+{% endblock %}

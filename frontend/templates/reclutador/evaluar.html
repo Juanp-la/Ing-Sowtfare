@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block titulo %}Evaluar candidato{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta"><a href="{% url 'reclutador:candidatos' p.vacante_id %}">&larr; Candidatos de {{ p.vacante.titulo }}</a></nav>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-2 mt-3 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ p.usuario.nombre_visible }}</h1>
+    <p class="text-muted mb-0">{{ p.vacante.titulo }} · ajuste {{ p.score|floatformat:0 }} % · HV {% if p.hv_adaptada %}adaptada{% else %}original{% endif %}</p>
+  </div>
+  {% include "postulaciones/partials/_estado.html" with estado=p.estado nombre=p.get_estado_display %}
+</div>
+<div class="row g-3">
+  <div class="col-12 col-lg-7">
+    <div class="card shadow-sm mb-3" id="perfil-enviado">
+      <div class="card-body">
+        <h2 class="h5">Hoja de vida enviada</h2>
+        {% if perfil.resumen %}<p>{{ perfil.resumen }}</p>{% endif %}
+        {% if perfil.experiencia %}<h3 class="h6">Experiencia</h3><ul>{% for e in perfil.experiencia %}<li><strong>{{ e.cargo }}</strong> · {{ e.empresa }} ({{ e.periodo }})<div class="small text-muted">{{ e.descripcion }}</div></li>{% endfor %}</ul>{% endif %}
+        {% if perfil.educacion %}<h3 class="h6">Educación</h3><ul>{% for e in perfil.educacion %}<li>{{ e.titulo }} · {{ e.institucion }} {{ e.anio }}</li>{% endfor %}</ul>{% endif %}
+        {% if perfil.habilidades %}<h3 class="h6">Habilidades</h3><p>{{ perfil.habilidades|join:", " }}</p>{% endif %}
+        {% if perfil.idiomas %}<h3 class="h6">Idiomas</h3><p class="mb-0">{{ perfil.idiomas|join:", " }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="row g-3">
+      <div class="col-12 col-md-6"><div class="card h-100"><div class="card-header bg-success-subtle">Cumple ({{ p.cumple|length }})</div>
+        <ul class="list-group list-group-flush">{% for r in p.cumple %}<li class="list-group-item">{{ r.requisito }}<div class="small text-muted">{{ r.evidencia }}</div></li>{% empty %}<li class="list-group-item text-muted">Ninguno.</li>{% endfor %}</ul></div></div>
+      <div class="col-12 col-md-6"><div class="card h-100"><div class="card-header bg-danger-subtle">No cumple ({{ p.no_cumple|length }})</div>
+        <ul class="list-group list-group-flush">{% for r in p.no_cumple %}<li class="list-group-item">{{ r.requisito }}{% if r.obligatorio %} <span class="badge text-bg-dark">Obligatorio</span>{% endif %}</li>{% empty %}<li class="list-group-item text-success">Cumple todo.</li>{% endfor %}</ul></div></div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-5">
+    <form method="post" class="card card-body shadow-sm" id="form-decision" novalidate>
+      {% csrf_token %}
+      <h2 class="h5">Decisión</h2>
+      <div class="mb-2">{% for opcion in form.decision %}<div class="form-check">{{ opcion.tag }} <label class="form-check-label" for="{{ opcion.id_for_label }}">{{ opcion.choice_label }}</label></div>{% endfor %}
+        {% if form.decision.errors %}<div class="text-danger small">{{ form.decision.errors.0 }}</div>{% endif %}</div>
+      <label class="form-label" for="{{ form.comentario.id_for_label }}">{{ form.comentario.label }}</label>
+      <textarea class="form-control{% if form.comentario.errors %} is-invalid{% endif %}" name="comentario" id="{{ form.comentario.id_for_label }}" rows="3" maxlength="1000">{{ form.comentario.value|default:'' }}</textarea>
+      {% if form.comentario.errors %}<div class="invalid-feedback d-block" id="error-comentario">{{ form.comentario.errors.0 }}</div>{% endif %}
+      <p class="small text-muted mt-2">El candidato verá tu decisión, tu comentario y sugerencias por cada requisito que no cumple.</p>
+      <button class="btn btn-primary" type="submit" id="btn-guardar-decision">Guardar decisión</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

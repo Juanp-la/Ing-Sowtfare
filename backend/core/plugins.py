@@ -2,7 +2,8 @@
 
 Una feature es una carpeta backend/apps/<app>/ cuyo AppConfig puede declarar:
   prefijo_url        "hv/"                     prefijo de sus URLs (por defecto "<label>/")
-  menu               [{"titulo", "url", "orden"}] entradas del menú de base.html
+  menu               [{"titulo", "url", "orden", "roles"}] entradas del menú de base.html;
+                     "roles" (opcional) limita la entrada a esos roles de Usuario
   fragmentos_navbar  ["<app>/partials/x.html"]   plantillas que se incluyen en la barra superior
   url_login          "<app>:ingresar"          reemplaza el login mínimo del núcleo
 """
@@ -18,10 +19,19 @@ def prefijo_url(config):
     return getattr(config, "prefijo_url", f"{config.label}/")
 
 
-def menu():
+def _visible(item, usuario):
+    roles = item.get("roles")
+    if not roles or usuario is None:
+        return not roles
+    return getattr(usuario, "rol", None) in roles or getattr(usuario, "is_superuser", False)
+
+
+def menu(usuario=None):
     entradas = []
     for config in apps_feature():
         for item in getattr(config, "menu", []):
+            if not _visible(item, usuario):
+                continue
             try:
                 url = reverse(item["url"])
             except NoReverseMatch:

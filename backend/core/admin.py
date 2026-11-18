@@ -3,12 +3,15 @@ from django.contrib.auth.admin import UserAdmin
 
 from .models import (
     AjusteVacante,
+    AlertaVacante,
     Diagnostico,
     EjecucionAgente,
     Hallazgo,
     HojaVida,
+    HVAdaptada,
     PerfilExtraido,
     PlanMejora,
+    Postulacion,
     PreguntaEntrevista,
     Usuario,
     Vacante,
@@ -23,7 +26,7 @@ class UsuarioAdmin(UserAdmin):
 
 @admin.register(Vacante)
 class VacanteAdmin(admin.ModelAdmin):
-    list_display = ("titulo", "empresa", "ciudad", "modalidad", "salario_min", "salario_max", "activa")
+    list_display = ("titulo", "empresa", "ciudad", "modalidad", "salario_min", "salario_max", "reclutador", "activa")
     list_filter = ("ciudad", "modalidad", "activa")
 
 
@@ -34,5 +37,6 @@ class EjecucionAgenteAdmin(admin.ModelAdmin):
     readonly_fields = [f.name for f in EjecucionAgente._meta.fields]
 
 
-for modelo in (HojaVida, PerfilExtraido, Diagnostico, Hallazgo, AjusteVacante, PlanMejora, PreguntaEntrevista):
+for modelo in (HojaVida, PerfilExtraido, Diagnostico, Hallazgo, AjusteVacante, PlanMejora, PreguntaEntrevista,
+               AlertaVacante, HVAdaptada, Postulacion):
     admin.site.register(modelo)

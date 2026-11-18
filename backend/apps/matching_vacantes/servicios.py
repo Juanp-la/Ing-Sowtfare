@@ -1,9 +1,13 @@
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Max, Min
 from django.utils import timezone
 
-from core.models import AjusteVacante, PerfilExtraido, Vacante
+from core.models import AjusteVacante, AlertaVacante, PerfilExtraido, Usuario, Vacante
 from core.servicios.copiloto import CopilotoService
+from core.servicios.cuota import CuotaAgotada
+
+UMBRAL_ALERTA_DEFECTO = 70
 
 
 def perfiles_del_usuario(usuario):
@@ -64,3 +68,41 @@ def filtrar_vacantes(ciudad="", modalidad="", salario_min=None, salario_max=None
 
 def rango_salarial():
     return Vacante.objects.filter(activa=True).aggregate(minimo=Min("salario_min"), maximo=Max("salario_max"))
+
+
+def umbral_alerta():
+    return getattr(settings, "ALERTAS_UMBRAL_AJUSTE", UMBRAL_ALERTA_DEFECTO)
+
+
+def generar_alertas(usuario, umbral=None, servicio=None):
+    """HU11: crea una alerta por cada vacante activa con ajuste >= umbral que el candidato no había recibido.
+
+    Reutiliza el ajuste del Matcher (solo recalcula si el perfil o las vacantes cambiaron).
+    Devuelve la lista de alertas nuevas.
+    """
+    perfil = perfil_activo(usuario)
+    if perfil is None:
+        return []
+    calcular_ajustes(usuario, perfil, servicio=servicio)
+    umbral = umbral_alerta() if umbral is None else umbral
+    ya_avisadas = AlertaVacante.objects.filter(usuario=usuario).values_list("vacante_id", flat=True)
+    candidatas = (AjusteVacante.objects.filter(perfil=perfil, score__gte=umbral, vacante__activa=True)
+                  .exclude(vacante_id__in=ya_avisadas).select_related("vacante"))
+    return [AlertaVacante.objects.create(usuario=usuario, vacante=a.vacante, score=a.score) for a in candidatas]
+
+
+def generar_alertas_todos(umbral=None):
+    """Ejecución periódica (comando generar_alertas): revisa a todos los candidatos con perfil."""
+    candidatos = Usuario.objects.filter(is_active=True, rol=Usuario.Rol.CANDIDATO,
+                                        hojas_vida__perfil__isnull=False).distinct()
+    total = 0
+    for usuario in candidatos:
+        try:
+            total += len(generar_alertas(usuario, umbral=umbral))
+        except (CuotaAgotada, RuntimeError):  # sin cuota o fallo del grafo: se intenta en la próxima ejecución
+            continue
+    return total
+
+
+def alertas_pendientes(usuario):
+    return AlertaVacante.objects.filter(usuario=usuario, leida=False, vacante__activa=True).count()

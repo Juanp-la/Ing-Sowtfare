@@ -60,3 +60,19 @@ Demo con el PO (Sección 6 del informe): lista desde la tabla `Vacante` ordenada
 
 Las pruebas de CA2 y CA3 recorren todas las plantillas presentes, así que al integrar en `Sprint-2` también verifican
 las de las demás features. Pendiente: prueba visual en un navegador real de celular.
+
+
+## HU11 (Sprint 3): Como candidato quiero recibir alertas de nuevas vacantes con alto ajuste para no revisar manualmente
+
+SP propuestos: 8 (sin planning poker; por confirmar). Umbral por defecto 70 % (`ALERTAS_UMBRAL_AJUSTE`). Las alertas se
+generan al abrir «Alertas» y con el comando periódico `python manage.py generar_alertas` (programable con cron o
+el Programador de tareas). Reutiliza el ajuste del Matcher; no agrega llamadas al LLM.
+
+| # | Criterio derivado del enunciado de la issue; por validar con el PO | Prueba (`tests/test_hu11_alertas.py`) |
+|---|---|---|
+| CA1 | Cada vacante activa con ajuste ≥ umbral genera una alerta, listada de mayor a menor ajuste. | `test_ca1_vacantes_con_ajuste_mayor_al_umbral_generan_alerta` |
+| CA2 | Una vacante ya avisada no vuelve a generar alerta. | `test_ca2_no_se_repite_la_alerta_de_una_vacante_ya_avisada` |
+| CA3 | Una vacante nueva con alto ajuste genera alerta y la barra superior muestra el número de alertas sin leer. | `test_ca3_una_vacante_nueva_con_alto_ajuste_avisa_en_la_barra` |
+| CA4 | Las vacantes con bajo ajuste no generan alerta. | `test_ca4_vacantes_con_bajo_ajuste_no_generan_alerta` |
+| CA5 | Puedo marcar una alerta o todas como leídas. | `test_ca5_marcar_una_o_todas_como_leidas` |
+| CA6 | Sin HV analizada se muestra un estado vacío. | `test_ca6_sin_hv_analizada_muestra_estado_vacio` |
