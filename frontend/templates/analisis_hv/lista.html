@@ -3,7 +3,10 @@
 {% block contenido %}
 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
   <h1 class="h3 mb-0">Mis hojas de vida</h1>
-  <a class="btn btn-primary" href="{% url 'analisis_hv:cargar' %}" id="btn-nueva-hv">Cargar nueva HV</a>
+  <div class="d-flex flex-wrap gap-2">
+    {% if url_magneto %}<a class="btn btn-outline-primary" href="{{ url_magneto }}" id="btn-hv-magneto">Usar mi HV de Magneto</a>{% endif %}
+    <a class="btn btn-primary" href="{% url 'analisis_hv:cargar' %}" id="btn-nueva-hv">Cargar nueva HV</a>
+  </div>
 </div>
 {% if hojas %}
 <div class="table-responsive">
@@ -12,7 +15,7 @@
     <tbody>
     {% for hv in hojas %}
       <tr>
-        <td data-etiqueta="Archivo">{{ hv.nombre_archivo }}</td>
+        <td data-etiqueta="Archivo">{{ hv.nombre_archivo }}{% if hv.origen == 'magneto' %} <span class="badge text-bg-primary-subtle text-primary-emphasis">Magneto</span>{% endif %}</td>
         <td data-etiqueta="Formato">{{ hv.get_formato_display }}</td>
         <td data-etiqueta="Cargada">{{ hv.fecha_carga|date:"d/m/Y H:i" }}</td>
         <td data-etiqueta="Estado">

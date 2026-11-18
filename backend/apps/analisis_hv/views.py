@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import NoReverseMatch, reverse
 from django.views.decorators.http import require_POST
 
 from core.models import HojaVida, PerfilExtraido
@@ -18,7 +19,11 @@ def _hv_del_usuario(request, pk):
 def lista(request):
     """Mis hojas de vida: lista desde BD con acciones por registro (ver, editar perfil, eliminar)."""
     hojas = HojaVida.objects.filter(usuario=request.user).select_related("perfil")
-    return render(request, "analisis_hv/lista.html", {"hojas": hojas})
+    try:
+        url_magneto = reverse("acceso_magneto:hv_magneto")
+    except NoReverseMatch:  # HU04 vive en la Feature 1, que puede no estar instalada
+        url_magneto = None
+    return render(request, "analisis_hv/lista.html", {"hojas": hojas, "url_magneto": url_magneto})
 
 
 @login_required

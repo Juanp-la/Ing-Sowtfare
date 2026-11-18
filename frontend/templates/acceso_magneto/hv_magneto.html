@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}Mi HV de Magneto{% endblock %}
+{% block contenido %}
+<h1 class="h3 mb-3">Mi hoja de vida en Magneto</h1>
+{% if not archivo %}
+  {% include "partials/_estado_vacio.html" with mensaje=mensaje_sin_hv url_accion=url_cargar texto_accion="Cargar una HV" %}
+{% else %}
+<div class="card shadow-sm" id="hv-magneto">
+  <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+    <div>
+      <h2 class="h5 mb-1" id="nombre-hv-magneto">{{ archivo.nombre }}</h2>
+      <p class="text-muted mb-0">Formato {{ archivo.formato|upper }}{% if archivo.actualizada %} · actualizada en Magneto el {{ archivo.actualizada }}{% endif %}</p>
+      {% if importada %}<p class="small text-success mb-0 mt-1" id="ya-importada">Ya la usas en el copiloto desde el {{ importada.fecha_carga|date:"d/m/Y" }}.</p>{% endif %}
+    </div>
+    <form method="post" action="{% url 'acceso_magneto:importar_hv' %}">
+      {% csrf_token %}
+      <button class="btn btn-primary" type="submit" id="btn-usar-hv-magneto">{% if importada %}Abrir en el copiloto{% else %}Usar esta HV{% endif %}</button>
+    </form>
+  </div>
+</div>
+<p class="small text-muted mt-3">El copiloto guarda una copia cifrada; tu HV en Magneto no se modifica.</p>
+{% endif %}
+{% endblock %}

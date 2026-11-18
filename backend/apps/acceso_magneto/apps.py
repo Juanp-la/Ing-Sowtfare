@@ -2,7 +2,7 @@ from django.apps import AppConfig
 
 
 class AccesoMagnetoConfig(AppConfig):
-    """Feature 1: acceso e integración con Magneto (HU01, NF04)."""
+    """Feature 1: acceso e integración con Magneto (HU01, HU04, NF04)."""
 
     name = "apps.acceso_magneto"
     label = "acceso_magneto"
