@@ -31,5 +31,17 @@ consola). La feature declara `url_login`, así el login mínimo del núcleo dele
 La verificación vive en el núcleo (`ControlCuota`, nodo `control_cuota` del grafo y `CopilotoService`); esta
 feature aporta el panel, el indicador y las pruebas extremo a extremo. La cuota por usuario se edita en el admin.
 
-## Fuera de alcance (Sprint 3 o posterior)
-HU04 (usar la HV del perfil Magneto) y cliente real de Magneto: no se construyen.
+## HU04 (Sprint 3): Como candidato quiero usar la hoja de vida que ya tengo en mi perfil de Magneto para no volver a cargarla
+
+SP propuestos: 5 (sin planning poker; por confirmar). Interfaz `MagnetoClient` ampliada con `obtener_hv(magneto_id)`;
+el cliente simulado devuelve la HV sintética de `core.datos_demo.HV_EN_MAGNETO`.
+
+| # | Criterio derivado del enunciado de la issue; por validar con el PO | Prueba (`tests/test_hu04_hv_magneto.py`) |
+|---|---|---|
+| CA1 | Si mi cuenta tiene HV en Magneto, veo su nombre, formato y fecha con el botón «Usar esta HV». | `test_ca1_si_tengo_hv_en_magneto_la_veo_con_el_boton_usar` |
+| CA2 | Al usarla, queda guardada cifrada en el copiloto (origen Magneto) sin cargar archivos y lista para «Analizar» (HU03). | `test_ca2_al_usarla_queda_en_el_copiloto_sin_cargarla_y_lista_para_analizar` |
+| CA3 | Si no tengo HV en Magneto, veo «No encontramos una hoja de vida en tu perfil de Magneto.» y la opción de cargarla. | `test_ca3_sin_hv_en_magneto_se_informa_y_se_ofrece_cargar` |
+| CA4 | Si ya la había traído (misma huella SHA-256), no se duplica: se abre la existente. | `test_ca4_no_se_duplica_si_ya_la_habia_traido` |
+
+## Fuera de alcance
+Cliente real de Magneto (no hay API pública): sigue simulado con `MagnetoMockClient`.

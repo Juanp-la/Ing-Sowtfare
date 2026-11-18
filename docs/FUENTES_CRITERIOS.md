@@ -38,6 +38,13 @@ Para estos 11 ítems no existen condiciones de aceptación en la Entrega 1 ni en
 | NF05 | #25 | Como administrador quiero registro y trazabilidad de qué agente generó cada resultado para auditar errores. | Registro de cada ejecución de agente (tabla EjecucionAgente) |
 | NF06 | #26 | Como usuario quiero usar el copiloto desde el celular con la misma funcionalidad que en el computador. | Interfaz responsive (Bootstrap) |
 
+## Ítems del Sprint 3
+
+Las issues de HU04, HU11, HU12, HU13, HU14, HU15, HU18, HU19 y HU20 solo tienen el enunciado. Sus criterios
+(`CRITERIOS_acceso_magneto.md`, `CRITERIOS_matching_vacantes.md`, `CRITERIOS_adaptacion_hv.md`,
+`CRITERIOS_postulaciones.md`, `CRITERIOS_reclutador.md`) se derivaron del enunciado y están por validar con el PO.
+Los SP del Sprint 3 son una propuesta del equipo: no hubo ceremonia de planning poker en este sprint.
+
 ## Contexto adicional del informe y del Excel
 
 | Tema | Fuente | Qué dice |
