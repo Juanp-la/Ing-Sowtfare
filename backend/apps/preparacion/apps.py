@@ -9,4 +9,4 @@ class PreparacionConfig(AppConfig):
     verbose_name = "Preparación (agente Coach)"
     default_auto_field = "django.db.models.BigAutoField"
     prefijo_url = "preparacion/"
-    menu = [{"titulo": "Preparación", "url": "preparacion:inicio", "orden": 50}]
+    menu = [{"titulo": "Preparación", "url": "preparacion:inicio", "orden": 50, "roles": ["candidato", "admin"]}]

@@ -9,4 +9,4 @@ class AnalisisHvConfig(AppConfig):
     verbose_name = "Análisis de HV (agente Extractor)"
     default_auto_field = "django.db.models.BigAutoField"
     prefijo_url = "hv/"
-    menu = [{"titulo": "Mis hojas de vida", "url": "analisis_hv:lista", "orden": 20}]
+    menu = [{"titulo": "Mis hojas de vida", "url": "analisis_hv:lista", "orden": 20, "roles": ["candidato", "admin"]}]

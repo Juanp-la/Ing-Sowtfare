@@ -4,6 +4,10 @@ EMAIL_DEMO = "demo@copiloto.test"
 NOMBRE_DEMO = "Ana Demo Restrepo"
 MAGNETO_ID_DEMO = "MAG-DEMO-0001"
 
+EMAIL_RECLUTADOR_DEMO = "reclutador@copiloto.test"
+NOMBRE_RECLUTADOR_DEMO = "Rafael Reclutador Demo"
+MAGNETO_ID_RECLUTADOR_DEMO = "MAG-REC-0001"
+
 TEXTO_HV_DEMO = """ANA DEMO RESTREPO
 Tecnóloga en Sistemas | Medellín, Antioquia | ana.demo@ejemplo.test | +57 300 000 0000
 
@@ -149,5 +153,57 @@ VACANTES_DEMO = [
         "ciudad": "Bogotá", "modalidad": "hibrido", "salario_min": 1300000, "salario_max": 1300000,
         "descripcion": "Apoyo en limpieza de datos y reportes.",
         "requisitos": [_req("habilidad", "Excel"), _req("habilidad", "Python"), _req("educacion", "bachiller", True)],
+    },
+]
+
+
+# HV guardadas en el perfil de Magneto (HU04). La de la demo es la misma HV sintética, actualizada en Magneto.
+HV_EN_MAGNETO = {
+    MAGNETO_ID_DEMO: {"nombre": "HV_Ana_Demo_Magneto.pdf", "texto": TEXTO_HV_DEMO, "actualizada": "2026-11-01"},
+}
+
+# Candidatos sintéticos que ya se postularon (HU19): perfiles con distinto nivel de ajuste.
+CANDIDATOS_POSTULADOS_DEMO = [
+    {
+        "email": "carlos.sintetico@copiloto.test", "nombre": "Carlos Sintético Gómez", "magneto_id": "MAG-DEMO-0002",
+        "vacantes": ["MAG-V-001", "MAG-V-003"],
+        "perfil": {
+            "contacto": {"nombre": "Carlos Sintético Gómez", "email": "carlos.sintetico@ejemplo.test", "telefono": "",
+                         "ciudad": "Medellín"},
+            "resumen": "Ingeniero de sistemas con 5 años en soporte de aplicaciones y bases de datos.",
+            "experiencia": [{"cargo": "Analista de soporte de aplicaciones", "empresa": "Empresa Ficticia 1",
+                             "periodo": "2020 - 2025", "descripcion": "Soporte nivel 2, consultas SQL y Zendesk."}],
+            "educacion": [{"titulo": "Ingeniería de Sistemas", "institucion": "Universidad Ficticia", "anio": "2019"}],
+            "habilidades": ["SQL", "Python", "Zendesk", "Power BI"],
+            "idiomas": ["Inglés B2"],
+        },
+    },
+    {
+        "email": "luisa.sintetica@copiloto.test", "nombre": "Luisa Sintética Pérez", "magneto_id": "MAG-DEMO-0003",
+        "vacantes": ["MAG-V-001"],
+        "perfil": {
+            "contacto": {"nombre": "Luisa Sintética Pérez", "email": "luisa.sintetica@ejemplo.test", "telefono": "",
+                         "ciudad": "Envigado"},
+            "resumen": "Técnica en sistemas con experiencia en mesa de ayuda.",
+            "experiencia": [{"cargo": "Técnica de mesa de ayuda", "empresa": "Empresa Ficticia 2",
+                             "periodo": "2023 - 2025", "descripcion": "Atención de usuarios y soporte a equipos."}],
+            "educacion": [{"titulo": "Técnico en Sistemas", "institucion": "Instituto Ficticio", "anio": "2022"}],
+            "habilidades": ["Excel", "Atención al cliente"],
+            "idiomas": [],
+        },
+    },
+    {
+        "email": "mateo.sintetico@copiloto.test", "nombre": "Mateo Sintético Ruiz", "magneto_id": "MAG-DEMO-0004",
+        "vacantes": ["MAG-V-001", "MAG-V-003"],
+        "perfil": {
+            "contacto": {"nombre": "Mateo Sintético Ruiz", "email": "mateo.sintetico@ejemplo.test", "telefono": "",
+                         "ciudad": "Bello"},
+            "resumen": "Tecnólogo en sistemas con 2 años en soporte técnico.",
+            "experiencia": [{"cargo": "Auxiliar de soporte", "empresa": "Empresa Ficticia 3",
+                             "periodo": "2023 - 2025", "descripcion": "Soporte a usuarios y reportes en SQL."}],
+            "educacion": [{"titulo": "Tecnología en Sistemas", "institucion": "Institución Ficticia", "anio": "2022"}],
+            "habilidades": ["SQL", "Excel"],
+            "idiomas": ["Inglés A2"],
+        },
     },
 ]
