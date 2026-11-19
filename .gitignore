@@ -17,3 +17,6 @@ backend/staticfiles/
 .pytest_cache/
 .coverage
 htmlcov/
+
+
+*.docx
